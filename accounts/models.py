@@ -10,9 +10,10 @@ class Usuario(AbstractUser):
         ADMIN = "ADMIN", "Administrador"
         ADMIN_EMPRESA = "ADMIN_EMPRESA", "Admin da Empresa"
         DIRETOR = "DIRETOR", "Diretor"
+        ESPECIAL = "ESPECIAL", "Usuário Especial"
         NORMAL = "NORMAL", "Usuário Normal"
 
-    role = models.CharField(max_length=13, choices=Role.choices, default=Role.NORMAL)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.NORMAL)
     last_seen = models.DateTimeField(null=True, blank=True)
 
     @property
@@ -26,6 +27,10 @@ class Usuario(AbstractUser):
     @property
     def is_diretor(self):
         return self.role == self.Role.DIRETOR
+
+    @property
+    def is_especial(self):
+        return self.role == self.Role.ESPECIAL
 
     @property
     def is_normal(self):

@@ -10,9 +10,22 @@
         <li class="breadcrumb-item active">Links de BI</li>
     </ol>
 </nav>
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <h1 class="h4 mb-0">Links de BI de {{ empresa.nome }}</h1>
-    <a href="{% url 'bi_links_admin:criar' empresa_id=empresa.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Novo link</a>
+    <div class="d-flex align-items-center gap-2">
+        {% if setores|length > 1 %}
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="filtro-setor" class="col-form-label col-form-label-sm text-muted mb-0">Setor</label>
+            <select id="filtro-setor" name="setor" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="">Todos os setores</option>
+                {% for setor in setores %}
+                <option value="{{ setor.pk }}" {% if setor_selecionado == setor.pk|stringformat:"s" %}selected{% endif %}>{{ setor.nome }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+        <a href="{% url 'bi_links_admin:criar' empresa_id=empresa.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Novo link</a>
+    </div>
 </div>
 <div class="table-responsive">
     <table class="table table-hover align-middle bg-white shadow-sm rounded">

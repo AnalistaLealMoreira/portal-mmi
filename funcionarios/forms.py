@@ -8,6 +8,7 @@ from .models import Funcionario
 
 ROLE_CHOICES_GERENCIAVEIS = [
     (Usuario.Role.NORMAL, Usuario.Role.NORMAL.label),
+    (Usuario.Role.ESPECIAL, Usuario.Role.ESPECIAL.label),
     (Usuario.Role.DIRETOR, Usuario.Role.DIRETOR.label),
     (Usuario.Role.ADMIN_EMPRESA, Usuario.Role.ADMIN_EMPRESA.label),
 ]

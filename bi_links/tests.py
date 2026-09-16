@@ -42,6 +42,13 @@ class EscopoDeAcessoTests(TestCase):
             usuario=self.u_diretor_a, empresa=self.empresa_a, setor=self.setor_a1
         )
 
+        self.u_especial_a = Usuario.objects.create_user(
+            "especial_a", password="senha12345", role=Usuario.Role.ESPECIAL
+        )
+        self.f_especial_a = Funcionario.objects.create(
+            usuario=self.u_especial_a, empresa=self.empresa_a, setor=self.setor_a1
+        )
+
         self.u_admin_empresa_a = Usuario.objects.create_user(
             "admin_empresa_a", password="senha12345", role=Usuario.Role.ADMIN_EMPRESA
         )
@@ -110,6 +117,22 @@ class EscopoDeAcessoTests(TestCase):
         self.client.login(username="normal_a", password="senha12345")
         resp = self.client.get("/auditoria/")
         self.assertEqual(resp.status_code, 403)
+
+    def test_especial_ve_todos_os_links_do_proprio_setor_de_qualquer_rede(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get("/links/", REMOTE_ADDR="203.0.113.20")
+        nomes = sorted(l.nome for l in resp.context["links"])
+        self.assertEqual(nomes, ["Dashboard Financeiro A", "Dashboard Financeiro A2"])
+
+    def test_especial_nao_acessa_link_de_outro_setor(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a2.pk}/acessar/")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_especial_nao_acessa_link_de_outra_empresa(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_b1.pk}/acessar/")
+        self.assertEqual(resp.status_code, 404)
 
     def test_diretor_ve_todos_os_links_da_propria_empresa(self):
         self.client.login(username="diretor_a", password="senha12345")

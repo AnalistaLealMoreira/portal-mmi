@@ -171,6 +171,13 @@ html.shell-collapsed .shell-user-mini { justify-content: center; padding: 6px 0;
 
 .shell-main { flex: 1 1 auto; min-width: 0; padding: clamp(18px, 2.4vw, 30px); }
 
+.shell-watermark { color: #6f88a8; font-size: 0.72em; font-weight: 600; }
+.shell-watermark-separator { color: #9aabc0; }
+
+@media (max-width: 991.98px) {
+    .shell-watermark { white-space: normal; }
+}
+
 /* Identidade MMI para o shell autenticado. */
 .shell-sidebar {
     --mmi-black: #090909;

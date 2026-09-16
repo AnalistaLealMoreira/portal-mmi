@@ -56,6 +56,7 @@ A regra de acesso é:
 
 - **Administrador**: pode acessar de qualquer rede e gerenciar as redes permitidas.
 - **Diretor**: pode acessar de qualquer rede.
+- **Usuário Especial**: pode acessar de qualquer rede, mas somente os links do seu setor.
 - **Usuário Normal**: só pode acessar quando o IP da requisição pertence a uma rede ativa cadastrada.
 - Sem nenhuma rede ativa cadastrada, usuários normais ficam bloqueados por padrão.
 
