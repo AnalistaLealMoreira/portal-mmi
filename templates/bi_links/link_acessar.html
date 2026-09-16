@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ link.nome }}{% endblock %}
+{% block content %}
+<div class="bi-report-page">
+    <div class="d-flex align-items-center mb-2">
+        <h1 class="h5 mb-0">{{ link.nome }}</h1>
+    </div>
+    <div class="bi-report-frame border rounded shadow-sm overflow-hidden">
+        <iframe src="{{ link.url }}" title="{{ link.nome }}"></iframe>
+        <div class="bi-report-cover" aria-hidden="true">
+            <span>MMI Incorporações</span>
+        </div>
+    </div>
+    <p class="text-muted small mt-2 mb-0">
+        Se o conteúdo não aparecer acima, o site de origem pode bloquear a exibição dentro desta página.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Excluir rede{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Excluir rede permitida</h1>
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <p>Deseja excluir a rede <strong>{{ object.rede }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Excluir</button>
+            <a href="{% url 'accounts:redes' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
