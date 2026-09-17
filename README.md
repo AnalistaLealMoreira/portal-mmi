@@ -25,6 +25,23 @@ Edite o `.env` antes de iniciar o sistema. Nunca use os valores de exemplo em pr
 
 ### SQL Server em produção
 
+Ambiente SQL Server de produção/homologação:
+
+| Item | Valor |
+|---|---|
+| Servidor | `automate.leal.local` |
+| Banco | `portalmmi` |
+| Porta | `1433` |
+| Driver | `ODBC Driver 17 for SQL Server` |
+| Autenticação da aplicação | Login SQL configurado pela equipe de TI |
+| Migração inicial | Schema e dados do SQLite transferidos para o SQL Server |
+
+O banco foi preparado com as migrações Django e contém as estruturas de
+usuários, empresas, funcionários, setores, links BI, redes permitidas,
+auditoria, sessões e tabelas auxiliares do Django. A carga inicial transferiu
+os dados existentes do SQLite, incluindo os hashes de senha dos usuários e os
+registros de auditoria. Senhas em texto puro não são armazenadas pelo sistema.
+
 Configure o banco usando variáveis separadas, sem colocar a senha no código:
 
 ```env
@@ -58,6 +75,21 @@ DATABASE_EXTRA_PARAMS=Trusted_Connection=yes;TrustServerCertificate=yes;
 
 Depois da migração, mantenha o login SQL restrito ao uso da aplicação e não
 compartilhe credenciais em repositórios, scripts ou chamados.
+
+#### Checklist de validação do banco
+
+1. Confirmar que o servidor da aplicação enxerga `automate.leal.local:1433`.
+2. Confirmar que o banco `portalmmi` está acessível.
+3. Instalar o `ODBC Driver 17 for SQL Server` no servidor web.
+4. Configurar o `.env` com o login SQL fornecido pelo DBA.
+5. Executar `python manage.py check --deploy`.
+6. Executar `python manage.py migrate --plan` e confirmar que não há migrações pendentes.
+7. Executar `python manage.py collectstatic --noinput`.
+8. Testar login, CRUD de empresas/setores/usuários/links e consulta da auditoria.
+
+O login usado pela aplicação deve possuir `db_datareader` e `db_datawriter`.
+Permissões de criação e alteração de tabelas devem ficar restritas ao DBA ou à
+conta administrativa usada durante as migrações.
 
 ```env
 SECRET_KEY=uma-chave-longa-e-aleatoria
@@ -144,6 +176,19 @@ python manage.py collectstatic --noinput
 ```
 
 Depois, reinicie o processo da aplicação e valide login, acesso por rede e abertura dos relatórios.
+
+## Dados e auditoria
+
+O sistema mantém os seguintes dados principais:
+
+- **Usuários**: contas Django, papéis, e-mail, último acesso e hash seguro de senha.
+- **Empresas e funcionários**: vínculo do usuário com empresa e setor.
+- **Setores e links BI**: links ativos, setor responsável e permissões individuais.
+- **Redes permitidas**: redes CIDR autorizadas para usuários normais.
+- **Auditoria**: usuário, link acessado, endereço IP, navegador e data/hora do acesso.
+
+O CRUD é realizado pelo portal usando o ORM do Django. A equipe de TI deve
+aplicar novas migrações antes de atualizar o código da aplicação.
 
 ## Estrutura relacionada ao controle de rede
 
