@@ -165,33 +165,33 @@ a:hover { color: var(--axion-navy); }
     display: flex;
     align-items: center;
     justify-content: center;
-    align-content: center;
-    flex-wrap: wrap;
-    gap: 5px 16px;
-    padding: 30px 8%;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 8% 4%;
     overflow: hidden;
-    transform: rotate(-18deg);
-    color: rgba(255, 255, 255, 0.34);
-    font-size: clamp(11px, 1.05vw, 15px);
-    font-weight: 700;
+    color: rgba(255, 255, 255, 0.16);
+    font-size: clamp(10px, 0.85vw, 13px);
+    font-weight: 600;
     line-height: 1.35;
     letter-spacing: 0.02em;
-    text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    text-align: left;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     pointer-events: none;
     user-select: none;
 }
 
-.bi-report-audit-watermark span,
-.bi-report-audit-watermark strong {
-    flex: 0 1 auto;
-    max-width: 100%;
+.bi-report-audit-watermark-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 3px 12px;
+    width: 100%;
+    max-width: 1200px;
 }
 
-.bi-report-audit-watermark strong {
-    flex-basis: 100%;
-    margin-top: 4px;
-    color: rgba(255, 230, 190, 0.42);
+.bi-report-audit-watermark-line strong {
+    color: rgba(255, 230, 190, 0.2);
     font-size: 0.9em;
 }
 

@@ -11,12 +11,16 @@
         <iframe src="{{ link.url }}" title="{{ link.nome }}"></iframe>
         {% if not user.is_diretor and not user.is_admin_empresa %}
         <div class="bi-report-audit-watermark" aria-hidden="true">
-            <span>Usuário: {{ user.get_full_name|default:user.username }}</span>
-            <span>E-mail: {{ user.email|default:"Não informado" }}</span>
-            <span>IP: {{ request.META.REMOTE_ADDR|default:"Não informado" }}</span>
-            <span>Data: {% now "d/m/Y H:i:s" %}</span>
-            <span>Setor: {{ user.funcionario.setor.nome|default:"Não informado" }}</span>
-            <strong>Proibido o compartilhamento dessa imagem. Sujeito a penalidade de acordo com a LGPD.</strong>
+            {% for indice in "1234" %}
+            <div class="bi-report-audit-watermark-line">
+                <span>Usuário: {{ user.get_full_name|default:user.username }}</span>
+                <span>E-mail: {{ user.email|default:"Não informado" }}</span>
+                <span>IP: {{ request.META.REMOTE_ADDR|default:"Não informado" }}</span>
+                <span>Data: {% now "d/m/Y H:i:s" %}</span>
+                <span>Setor: {{ user.funcionario.setor.nome|default:"Não informado" }}</span>
+                <strong>Proibido o compartilhamento dessa imagem. Sujeito a penalidade de acordo com a LGPD.</strong>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
         <div class="bi-report-cover" aria-hidden="true">
