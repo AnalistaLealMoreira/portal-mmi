@@ -169,7 +169,7 @@ a:hover { color: var(--axion-navy); }
     justify-content: space-evenly;
     padding: 8% 4%;
     overflow: hidden;
-    color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.10);
     font-size: clamp(10px, 0.85vw, 13px);
     font-weight: 600;
     line-height: 1.35;
@@ -184,15 +184,19 @@ a:hover { color: var(--axion-navy); }
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 3px 12px;
     width: 100%;
     max-width: 1200px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .bi-report-audit-watermark-line strong {
-    color: rgba(255, 230, 190, 0.2);
+    color: rgba(255, 230, 190, 0.14);
     font-size: 0.9em;
+    white-space: nowrap;
 }
 
 .bi-report-cover {
