@@ -51,9 +51,9 @@ class CadastroUsuarioTests(TestCase):
 
     def test_admin_empresa_cadastra_usuario_na_propria_empresa(self):
         self.client.login(username="admin_emp_a", password="senha12345")
-        resp = self.client.post("/usuarios/novo/", self._payload())
+        resp = self.client.post("/usuarios/novo/", self._payload(email="novo.usuario@empresa.com"))
         self.assertEqual(resp.status_code, 302)
-        novo = Funcionario.objects.get(usuario__username="novo_usuario")
+        novo = Funcionario.objects.get(usuario__username="novo.usuario")
         self.assertEqual(novo.empresa, self.empresa_a)
         self.assertEqual(novo.setor, self.setor_a)
 
@@ -78,17 +78,17 @@ class CadastroUsuarioTests(TestCase):
     def test_admin_global_cadastra_usuario_escolhendo_empresa(self):
         self.client.login(username="admin_teste", password="senha12345")
         resp = self.client.post(
-            "/usuarios/novo/", self._payload(empresa=self.empresa_b.pk, setor=self.setor_b.pk)
+            "/usuarios/novo/", self._payload(email="novo.usuario@empresa.com", empresa=self.empresa_b.pk, setor=self.setor_b.pk)
         )
         self.assertEqual(resp.status_code, 302)
-        novo = Funcionario.objects.get(usuario__username="novo_usuario")
+        novo = Funcionario.objects.get(usuario__username="novo.usuario")
         self.assertEqual(novo.empresa, self.empresa_b)
         self.assertEqual(novo.setor, self.setor_b)
 
     def test_admin_global_nao_atribui_setor_de_empresa_diferente_da_escolhida(self):
         self.client.login(username="admin_teste", password="senha12345")
         resp = self.client.post(
-            "/usuarios/novo/", self._payload(empresa=self.empresa_a.pk, setor=self.setor_b.pk)
+            "/usuarios/novo/", self._payload(email="novo.usuario@empresa.com", empresa=self.empresa_a.pk, setor=self.setor_b.pk)
         )
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(Funcionario.objects.filter(usuario__username="novo_usuario").exists())
@@ -100,6 +100,20 @@ class CadastroUsuarioTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Funcionario.objects.filter(usuario__username="admin_emp_a").count(), 1)
+
+    def test_login_e_gerado_pelo_email_mesmo_se_postar_outro_login(self):
+        self.client.login(username="admin_teste", password="senha12345")
+        resp = self.client.post(
+            "/usuarios/novo/",
+            self._payload(
+                username="login_informado_manualmente",
+                email="Priscila.Martins@empresa.com",
+                empresa=self.empresa_a.pk,
+            ),
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Funcionario.objects.filter(usuario__username="priscila.martins").exists())
+        self.assertFalse(Usuario.objects.filter(username="login_informado_manualmente").exists())
 
     def test_normal_nao_acessa_cadastro_de_usuario(self):
         self.client.login(username="normal_a", password="senha12345")

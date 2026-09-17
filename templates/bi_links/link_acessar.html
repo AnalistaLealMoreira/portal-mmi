@@ -11,7 +11,7 @@
         <iframe src="{{ link.url }}" title="{{ link.nome }}"></iframe>
         {% if not user.is_diretor and not user.is_admin_empresa %}
         <div class="bi-report-audit-watermark" aria-hidden="true">
-            {% for indice in "1234" %}
+            {% for indice in "12" %}
             <div class="bi-report-audit-watermark-line">
                 <span>Usuário: {{ user.get_full_name|default:user.username }}</span>
                 <span>E-mail: {{ user.email|default:"Não informado" }}</span>
