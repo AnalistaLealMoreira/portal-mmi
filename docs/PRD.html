@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD - Portal MMI</title>
+<style>
+:root{--bg:#0b0b0b;--panel:#151412;--text:#f3eee8;--muted:#b8b0a7;--accent:#dfd0be;--line:rgba(223,208,190,.2);--ok:#9fc49b;--warn:#e8bd78}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(1000px 700px at 84% 0,#29251f 0,#11100f 45%,#090909 100%);color:var(--text);font:15px/1.65 "Segoe UI",Arial,sans-serif}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.15;background-image:linear-gradient(rgba(223,208,190,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(223,208,190,.12) 1px,transparent 1px);background-size:64px 64px}main{position:relative;max-width:1180px;margin:auto;padding:42px 24px 72px}header{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:26px}.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}h1,h2,h3{line-height:1.2}h1{font-size:clamp(32px,5vw,58px);margin:8px 0 12px}h2{font-size:25px;color:var(--accent);margin:38px 0 14px}h3{font-size:18px;margin:24px 0 8px}p{max-width:85ch;color:var(--muted)}nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 30px}nav a{color:var(--accent);text-decoration:none;border:1px solid var(--line);padding:7px 11px;border-radius:3px}nav a:hover{background:rgba(223,208,190,.12)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:14px}.card{background:rgba(21,20,18,.9);border:1px solid var(--line);padding:19px;border-radius:3px}.card strong{display:block;color:var(--text);font-size:18px;margin-bottom:5px}.card span{color:var(--muted)}table{width:100%;border-collapse:collapse;background:rgba(21,20,18,.86);margin:12px 0 20px}th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase}td{color:var(--muted)}code,pre{font-family:Consolas,monospace}code{color:var(--accent)}pre{overflow:auto;background:#090909;border:1px solid var(--line);padding:16px;color:#e8dfd3;border-radius:3px}.callout{border-left:3px solid var(--warn);background:rgba(232,189,120,.08);padding:12px 16px;color:var(--muted)}.callout.ok{border-left-color:var(--ok);background:rgba(159,196,155,.08)}li{margin:6px 0;color:var(--muted)}.section{scroll-margin-top:20px}.footer{border-top:1px solid var(--line);margin-top:42px;padding-top:18px;color:#81786f;font-size:13px}@media print{body{background:#fff;color:#111}body:before,nav{display:none}main{padding:16px}.card,table,pre{background:#fff;color:#111;border-color:#aaa}p,td,li,.card span{color:#333}h2,.eyebrow,th,code{color:#684d35}.section{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">MMI Incorporações · Product Requirements Document</div>
+<h1>Portal MMI</h1>
+<p>Documento de requisitos do produto para centralização de relatórios de BI, controle de acesso por perfil e setor, auditoria e operação corporativa.</p>
+</header>
+<nav aria-label="Índice da PRD">
+<a href="#visao">Visão</a><a href="#usuarios">Perfis</a><a href="#funcionalidades">Funcionalidades</a><a href="#requisitos">Requisitos técnicos</a><a href="#aceite">Aceite</a><a href="#sucesso">Sucesso</a>
+</nav>
+<section id="visao" class="section">
+<h2>1. Visão do produto</h2>
+<p>O Portal MMI é uma aplicação web corporativa para centralizar o acesso a relatórios de BI, organizar permissões por empresa e setor e registrar auditoria de acessos. A equipe de negócio consulta seus relatórios com segurança, enquanto a administração mantém empresas, setores, usuários, links e redes autorizadas.</p>
+<h3>Objetivos</h3>
+<div class="grid"><div class="card"><strong>Centralização</strong><span>Reunir os relatórios de BI em um único portal corporativo.</span></div><div class="card"><strong>Controle</strong><span>Aplicar regras por perfil, empresa, setor, compartilhamento e rede.</span></div><div class="card"><strong>Rastreabilidade</strong><span>Registrar usuário, relatório, IP, navegador e data/hora do acesso.</span></div><div class="card"><strong>Operação</strong><span>Permitir implantação reproduzível em nuvem com SQL Server.</span></div></div>
+</section>
+<section id="usuarios" class="section">
+<h2>2. Usuários e permissões</h2>
+<table><thead><tr><th>Perfil</th><th>Permissões e limitações</th></tr></thead><tbody>
+<tr><td>Administrador</td><td>Acesso global e administração de empresas, usuários, setores, links, redes e auditoria.</td></tr>
+<tr><td>Admin da Empresa</td><td>Administra e visualiza somente a própria empresa. Não recebe marca d'água no relatório.</td></tr>
+<tr><td>Diretor</td><td>Visualiza links e indicadores da própria empresa. Não recebe marca d'água no relatório.</td></tr>
+<tr><td>Usuário Especial</td><td>Vê links do próprio setor e links de outros setores explicitamente compartilhados. Acessa de qualquer rede.</td></tr>
+<tr><td>Usuário Normal</td><td>Vê links liberados dentro do setor e só acessa a partir de rede autorizada.</td></tr>
+</tbody></table>
+</section>
+<section id="funcionalidades" class="section">
+<h2>3. Funcionalidades</h2>
+<h3>3.1 Autenticação</h3><ul><li>Login por usuário ou e-mail.</li><li>Opção “Manter conectado”.</li><li>Logout via POST.</li><li>Não existe recuperação pública de senha na versão atual.</li></ul>
+<h3>3.2 Gestão administrativa</h3><ul><li>CRUD de empresas e setores por empresa.</li><li>Cadastro, edição e exclusão de funcionários/usuários.</li><li>Login gerado pelo trecho antes do <code>@</code>, com iniciais maiúsculas e separadores convertidos em espaços.</li><li>CRUD de links de BI por empresa/setor.</li><li>Compartilhamento entre setores permitido somente para Usuários Especiais.</li><li>CRUD de redes permitidas exclusivo do Administrador.</li></ul>
+<h3>3.3 Relatórios e auditoria</h3><ul><li>Relatórios exibidos em iframe dentro do portal.</li><li>Validação de permissão repetida no endpoint do link.</li><li>Acesso permitido registrado em <code>auditoria.AcessoLog</code>.</li><li>Marca d'água visual com dados de auditoria para Normal e Especial.</li><li>Marca d'água não aparece para Diretor e Admin da Empresa.</li></ul>
+<h3>3.4 Dashboard</h3><ul><li>Administrador: visão consolidada de empresas, usuários e links.</li><li>Diretor/Admin da Empresa: indicadores da empresa.</li><li>Normal/Especial: indicadores dos próprios acessos.</li><li>Ranking de setores e relatórios mais acessados.</li><li>Gráfico de acessos recentes.</li><li>Barra lateral com setores e links visíveis, inclusive setores de links compartilhados.</li></ul>
+</section>
+<section id="requisitos" class="section">
+<h2>4. Requisitos não funcionais</h2>
+<div class="grid"><div class="card"><strong>Runtime</strong><span>Python 3.11 ou superior e Django 5.2.x.</span></div><div class="card"><strong>Banco</strong><span>SQL Server com <code>mssql-django</code>, <code>pyodbc</code> e ODBC Driver 17+.</span></div><div class="card"><strong>Segurança</strong><span>HTTPS, segredos por ambiente/cofre e DDL restrito ao DBA.</span></div><div class="card"><strong>Rede</strong><span>Proxy reverso deve preservar o IP real de forma confiável.</span></div></div>
+<h3>Configuração de produção</h3><pre>DATABASE_BACKEND=mssql
+DATABASE_NAME=portalmmi
+DATABASE_USER=login-da-aplicacao
+DATABASE_PASSWORD=senha-do-cofre
+DATABASE_HOST=automate.leal.local
+DATABASE_PORT=1433
+DATABASE_DRIVER=ODBC Driver 17 for SQL Server
+DATABASE_EXTRA_PARAMS=TrustServerCertificate=yes;
+DEBUG=False
+ALLOWED_HOSTS=portal.exemplo.com</pre>
+<div class="callout">A conta da aplicação deve possuir <code>db_datareader</code> e <code>db_datawriter</code>. Migrações e alterações de schema devem ser executadas por uma conta administrativa ou pelo DBA.</div>
+</section>
+<section id="aceite" class="section">
+<h2>5. Critérios de aceite</h2>
+<ul><li>Normal fora de rede autorizada recebe HTTP 403.</li><li>Administrador, Diretor e Especial não dependem da rede permitida.</li><li>Normal não acessa link de outro setor ou empresa.</li><li>Especial acessa link de outro setor somente quando compartilhado.</li><li>Admin da Empresa não consegue operar outra empresa via ID forjado.</li><li>Setores exibidos no cadastro acompanham a empresa selecionada.</li><li>Acesso permitido cria log com IP e user-agent.</li><li>Marca d'água aparece para Normal/Especial e não para Diretor/Admin da Empresa.</li><li><code>python manage.py check</code> passa e não há migrações pendentes.</li><li>Portal opera com SQL Server configurado por variáveis de ambiente.</li></ul>
+</section>
+<section id="escopo" class="section">
+<h2>6. Fora de escopo</h2>
+<ul><li>Recuperação automática de senha pelo portal público.</li><li>Alteração de conteúdo dentro de iframe externo.</li><li>Administração do SQL Server pelo portal.</li><li>Substituição do sistema de BI de origem.</li><li>Armazenamento de senhas em texto puro.</li></ul>
+</section>
+<section id="sucesso" class="section">
+<h2>7. Indicadores de sucesso</h2>
+<div class="callout ok">100% dos acessos permitidos registrados; zero acesso fora do escopo de empresa/setor/perfil; deploy reproduzível por ambiente, migrações e arquivos estáticos; baixa indisponibilidade durante atualizações.</div>
+</section>
+<div class="footer">Versão HTML da PRD do Portal MMI. Documento complementar a <code>docs/PRD.md</code>, <code>docs/AVALIACAO.md</code> e <code>docs/implantacao-nuvem.html</code>.</div>
+</main>
+</body>
+</html>

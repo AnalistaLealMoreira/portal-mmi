@@ -5,6 +5,7 @@ Portal corporativo da MMI Incorporações, desenvolvido em Django.
 ## Documentação do projeto
 
 - [PRD - Requisitos e critérios de aceite](docs/PRD.md)
+- [PRD em HTML para apresentação](docs/PRD.html)
 - [Avaliação técnica e operacional](docs/AVALIACAO.md)
 - [Guia HTML de implantação em nuvem](docs/implantacao-nuvem.html)
 
