@@ -130,6 +130,50 @@ a:hover { color: var(--axion-navy); }
     max-width: 380px;
 }
 
+/* Fundo MMI para as telas públicas de recuperação de acesso. */
+.auth-bg:has(.auth-recovery-card) {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(900px 700px at 78% 32%, #201e1b 0%, #11100f 46%, #090909 100%);
+    color: #f3eee8;
+}
+.auth-bg:has(.auth-recovery-card)::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    opacity: 0.22;
+    background-image:
+        linear-gradient(rgba(223, 208, 190, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(223, 208, 190, 0.08) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(900px 620px at 50% 40%, #000 0%, transparent 78%);
+    -webkit-mask-image: radial-gradient(900px 620px at 50% 40%, #000 0%, transparent 78%);
+}
+.auth-bg:has(.auth-recovery-card) > .auth-card {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+.auth-recovery-card {
+    padding: 38px !important;
+    border: 1px solid rgba(223, 208, 190, 0.24);
+    border-radius: 2px;
+    background: rgba(18, 17, 16, 0.94);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+}
+.auth-recovery-card h1 { color: #fff; }
+.auth-recovery-card p { color: #b8b0a7; }
+.auth-recovery-card label { color: #b8b0a7; }
+.auth-recovery-card input {
+    border: 1px solid rgba(223, 208, 190, 0.22);
+    border-radius: 2px;
+    background: #0e0d0c;
+    color: #f3eee8;
+}
+
 .bi-report-frame {
     position: relative;
     flex: 1 1 auto;
