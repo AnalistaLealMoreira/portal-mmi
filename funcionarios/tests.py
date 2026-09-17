@@ -85,6 +85,15 @@ class CadastroUsuarioTests(TestCase):
         self.assertEqual(novo.empresa, self.empresa_b)
         self.assertEqual(novo.setor, self.setor_b)
 
+    def test_admin_global_filtra_setores_pela_empresa_selecionada(self):
+        self.client.login(username="admin_teste", password="senha12345")
+        resp = self.client.get("/usuarios/novo/")
+        campo_setor = resp.context["form"]["setor"]
+        self.assertContains(resp, f'data-empresa-id="{self.empresa_a.pk}"')
+        self.assertContains(resp, f'data-empresa-id="{self.empresa_b.pk}"')
+        self.assertIn('id="id_empresa"', resp.content.decode())
+        self.assertIn(campo_setor.id_for_label, resp.content.decode())
+
     def test_admin_global_nao_atribui_setor_de_empresa_diferente_da_escolhida(self):
         self.client.login(username="admin_teste", password="senha12345")
         resp = self.client.post(

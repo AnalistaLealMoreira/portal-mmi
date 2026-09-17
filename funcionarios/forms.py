@@ -24,6 +24,14 @@ class SetorComEmpresaChoiceField(forms.ModelChoiceField):
         return f"{setor.nome} ({setor.empresa.nome})"
 
 
+class SetorPorEmpresaSelect(forms.Select):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value and getattr(value, "instance", None):
+            option["attrs"]["data-empresa-id"] = value.instance.empresa_id
+        return option
+
+
 class CadastroUsuarioForm(forms.ModelForm):
     """Cadastro único: cria o Usuario (login) e o Funcionario, já vinculados à
     empresa, ao setor e ao nível (role) escolhidos. Quem pode acessar cada
@@ -65,6 +73,7 @@ class CadastroUsuarioForm(forms.ModelForm):
                 label="Setor",
                 queryset=Setor.objects.select_related("empresa").all(),
                 required=True,
+                widget=SetorPorEmpresaSelect,
             )
             self.order_fields(
                 ["username", "first_name", "last_name", "email", "password", "empresa", "role", "setor"]
