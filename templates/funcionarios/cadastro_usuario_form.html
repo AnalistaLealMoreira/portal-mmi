@@ -32,7 +32,13 @@
         if (!email || !username) return;
 
         email.addEventListener("input", function () {
-            username.value = email.value.split("@", 1)[0].trim().toLowerCase();
+            username.value = email.value
+                .split("@", 1)[0]
+                .trim()
+                .replace(/[._-]+/g, " ")
+                .replace(/\s+/g, " ")
+                .toLowerCase()
+                .replace(/(^|\s)\S/g, function (letra) { return letra.toUpperCase(); });
         });
     })();
 </script>

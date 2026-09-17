@@ -53,7 +53,7 @@ class CadastroUsuarioTests(TestCase):
         self.client.login(username="admin_emp_a", password="senha12345")
         resp = self.client.post("/usuarios/novo/", self._payload(email="novo.usuario@empresa.com"))
         self.assertEqual(resp.status_code, 302)
-        novo = Funcionario.objects.get(usuario__username="novo.usuario")
+        novo = Funcionario.objects.get(usuario__username="Novo Usuario")
         self.assertEqual(novo.empresa, self.empresa_a)
         self.assertEqual(novo.setor, self.setor_a)
 
@@ -81,7 +81,7 @@ class CadastroUsuarioTests(TestCase):
             "/usuarios/novo/", self._payload(email="novo.usuario@empresa.com", empresa=self.empresa_b.pk, setor=self.setor_b.pk)
         )
         self.assertEqual(resp.status_code, 302)
-        novo = Funcionario.objects.get(usuario__username="novo.usuario")
+        novo = Funcionario.objects.get(usuario__username="Novo Usuario")
         self.assertEqual(novo.empresa, self.empresa_b)
         self.assertEqual(novo.setor, self.setor_b)
 
@@ -112,7 +112,7 @@ class CadastroUsuarioTests(TestCase):
             ),
         )
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Funcionario.objects.filter(usuario__username="priscila.martins").exists())
+        self.assertTrue(Funcionario.objects.filter(usuario__username="Priscila Martins").exists())
         self.assertFalse(Usuario.objects.filter(username="login_informado_manualmente").exists())
 
     def test_normal_nao_acessa_cadastro_de_usuario(self):

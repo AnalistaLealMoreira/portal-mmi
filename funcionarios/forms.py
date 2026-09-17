@@ -79,8 +79,8 @@ class CadastroUsuarioForm(forms.ModelForm):
     def _username_from_email(email):
         local_part = email.split("@", 1)[0].strip().lower() if "@" in email else ""
         normalized = unicodedata.normalize("NFKD", local_part).encode("ascii", "ignore").decode()
-        username = re.sub(r"[^a-z0-9._-]+", ".", normalized)
-        return re.sub(r"[._-]+", ".", username).strip(".")
+        username = re.sub(r"[^a-z0-9._-]+", " ", normalized)
+        return re.sub(r"[._-]+", " ", username).strip().title()
 
     def clean(self):
         cleaned_data = super().clean()
