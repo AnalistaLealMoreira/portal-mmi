@@ -1,5 +1,6 @@
 from django import forms
 
+from accounts.models import Usuario
 from core.forms import checklist_dropdown_widget, status_field
 from funcionarios.models import Funcionario
 from setores.models import Setor
@@ -42,7 +43,10 @@ class LinkBIForm(forms.ModelForm):
         cleaned_data = super().clean()
         setor = cleaned_data.get("setor")
         usuarios = cleaned_data.get("usuarios_liberados")
-        if setor and usuarios and usuarios.exclude(setor=setor).exists():
+        usuarios_fora_do_setor = usuarios.exclude(setor=setor).exclude(
+            usuario__role=Usuario.Role.ESPECIAL
+        ) if usuarios else Funcionario.objects.none()
+        if setor and usuarios_fora_do_setor.exists():
             self.add_error(
                 "usuarios_liberados", "Só é possível liberar para usuários do setor escolhido."
             )
