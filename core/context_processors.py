@@ -45,16 +45,26 @@ def sidebar_setores(request):
     if user is None or not user.is_authenticated or user.is_admin or user.is_admin_empresa:
         return {}
 
+    links_por_setor = {}
+    links_visiveis = LinkBI.objects.visible_to(user).filter(ativo=True).select_related("setor")
+    for link in links_visiveis:
+        links_por_setor.setdefault(link.setor_id, []).append(link)
+
     if (user.is_diretor or user.is_admin_empresa) and hasattr(user, "funcionario"):
         setores = list(user.funcionario.empresa.setores.all())
+    elif user.is_especial and hasattr(user, "funcionario"):
+        setores = []
+        if user.funcionario.setor:
+            setores.append(user.funcionario.setor)
+        setores_ids = {setor.pk for setor in setores}
+        for link in links_visiveis:
+            if link.setor_id not in setores_ids:
+                setores.append(link.setor)
+                setores_ids.add(link.setor_id)
     elif hasattr(user, "funcionario") and user.funcionario.setor:
         setores = [user.funcionario.setor]
     else:
         setores = []
-
-    links_por_setor = {}
-    for link in LinkBI.objects.visible_to(user).filter(ativo=True).select_related("setor"):
-        links_por_setor.setdefault(link.setor_id, []).append(link)
 
     for setor in setores:
         setor.links_visiveis = links_por_setor.get(setor.id, [])

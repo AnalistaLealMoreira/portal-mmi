@@ -1,10 +1,13 @@
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 
-from accounts.models import Usuario
+from accounts.models import RedePermitida, Usuario
+from auditoria.models import AcessoLog
 from bi_links.models import LinkBI
 from empresas.models import Empresa
 from funcionarios.models import Funcionario
 from setores.models import Setor
+
+from .context_processors import sidebar_setores
 
 
 class DashboardPorPapelTests(TestCase):
@@ -14,6 +17,7 @@ class DashboardPorPapelTests(TestCase):
     os demais veem só a lista dos próprios links."""
 
     def setUp(self):
+        RedePermitida.objects.create(rede="127.0.0.1/32")
         self.empresa_a = Empresa.objects.create(nome="Empresa A", cnpj="11.111.111/0001-11")
         self.empresa_b = Empresa.objects.create(nome="Empresa B", cnpj="22.222.222/0001-22")
         self.setor_a = Setor.objects.create(empresa=self.empresa_a, nome="Financeiro")
@@ -53,16 +57,22 @@ class DashboardPorPapelTests(TestCase):
         self.f_normal_a = Funcionario.objects.create(
             usuario=u_normal_a, empresa=self.empresa_a, setor=self.setor_a
         )
+        self.u_especial_a = Usuario.objects.create_user(
+            "especial_a", password="senha12345", role=Usuario.Role.ESPECIAL
+        )
+        self.f_especial_a = Funcionario.objects.create(
+            usuario=self.u_especial_a, empresa=self.empresa_a, setor=self.setor_a
+        )
 
     def test_admin_ve_painel_consolidado(self):
         self.client.login(username="admin_teste", password="senha12345")
-        resp = self.client.get("/")
+        resp = self.client.get("/dashboard/")
         self.assertTrue(resp.context["mostrar_painel_admin"])
         self.assertNotIn("mostrar_indicadores", resp.context)
         self.assertEqual(resp.context["total_empresas"], 2)
-        # 3 Funcionarios (admin_emp_a, diretor_a, normal_a) — o próprio admin não
+        # 4 Funcionarios (admin_emp_a, diretor_a, normal_a, especial_a) — o próprio admin não
         # tem Funcionario, então "total de usuários" não deve contá-lo.
-        self.assertEqual(resp.context["total_usuarios"], 3)
+        self.assertEqual(resp.context["total_usuarios"], 4)
         self.assertEqual(resp.context["total_links"], 3)
         por_empresa = {i["setor__empresa__nome"]: i["total"] for i in resp.context["links_por_empresa"]}
         self.assertEqual(por_empresa, {"Empresa A": 1, "Empresa B": 2})
@@ -71,24 +81,34 @@ class DashboardPorPapelTests(TestCase):
 
     def test_admin_empresa_ve_indicadores_da_propria_empresa(self):
         self.client.login(username="admin_emp_a", password="senha12345")
-        resp = self.client.get("/")
+        resp = self.client.get("/dashboard/")
         self.assertFalse(resp.context.get("mostrar_painel_admin"))
         self.assertTrue(resp.context["mostrar_indicadores"])
         self.assertContains(resp, "Indicadores de Alerta")
 
     def test_diretor_continua_vendo_indicadores(self):
         self.client.login(username="diretor_a", password="senha12345")
-        resp = self.client.get("/")
+        resp = self.client.get("/dashboard/")
         self.assertFalse(resp.context.get("mostrar_painel_admin"))
         self.assertTrue(resp.context["mostrar_indicadores"])
         self.assertContains(resp, "Indicadores de Alerta")
 
-    def test_normal_ve_apenas_seus_links(self):
+    def test_normal_ve_indicadores_dos_proprios_acessos(self):
+        AcessoLog.objects.create(usuario=self.f_normal_a.usuario, link=self.link_a)
         self.client.login(username="normal_a", password="senha12345")
-        resp = self.client.get("/")
+        resp = self.client.get("/dashboard/")
         self.assertFalse(resp.context.get("mostrar_painel_admin"))
-        self.assertFalse(resp.context["mostrar_indicadores"])
-        self.assertContains(resp, "Seus links de BI")
+        self.assertTrue(resp.context["mostrar_indicadores"])
+        self.assertEqual(resp.context["top_links"][0]["link__nome"], "Dashboard A")
+        self.assertContains(resp, "Indicadores de Alerta")
+
+    def test_especial_ve_indicadores_dos_proprios_acessos(self):
+        AcessoLog.objects.create(usuario=self.u_especial_a, link=self.link_a)
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get("/dashboard/")
+        self.assertTrue(resp.context["mostrar_indicadores"])
+        self.assertEqual(resp.context["conexoes_recentes"], 1)
+        self.assertContains(resp, "Relatórios Mais Acessados")
 
 
 class ShellNavTests(TestCase):
@@ -153,3 +173,26 @@ class ShellNavTests(TestCase):
         titulos = [g["titulo"] for g in resp.context["grupos_nav"]]
         self.assertNotIn("Administração", titulos)
         self.assertNotIn("Sistema", titulos)
+
+    def test_especial_ve_setor_de_link_compartilhado_na_barra_lateral(self):
+        setor_b = Setor.objects.create(empresa=self.empresa_a, nome="Comercial")
+        especial = Usuario.objects.create_user(
+            "especial_a", password="senha12345", role=Usuario.Role.ESPECIAL
+        )
+        funcionario = Funcionario.objects.create(
+            usuario=especial, empresa=self.empresa_a, setor=self.setor_a
+        )
+        link = LinkBI.objects.create(
+            setor=setor_b, nome="Dashboard Comercial", url="https://example.com/comercial", criado_por=self.admin
+        )
+        link.funcionarios_liberados.add(funcionario)
+
+        request = RequestFactory().get("/")
+        request.user = especial
+        contexto = sidebar_setores(request)
+        setores = {
+            setor.nome: [item.nome for item in setor.links_visiveis]
+            for setor in contexto["sidebar_setores"]
+        }
+        self.assertEqual(setores["Financeiro"], [])
+        self.assertEqual(setores["Comercial"], ["Dashboard Comercial"])

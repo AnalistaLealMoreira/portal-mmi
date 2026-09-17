@@ -129,21 +129,29 @@
             </div>
 
             <div class="tab-pane fade" id="tab-links">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead><tr><th>Link</th><th>Acessos</th></tr></thead>
-                        <tbody>
-                        {% for item in top_links %}
-                        <tr><td>{{ item.link__nome }}</td><td>{{ item.total }}</td></tr>
-                        {% empty %}
-                        <tr><td colspan="2" class="text-muted">Nenhum acesso registrado ainda.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead><tr><th>Link</th><th>Acessos</th></tr></thead>
+                                <tbody>
+                                {% for item in top_links %}
+                                <tr><td>{{ item.link__nome }}</td><td>{{ item.total }}</td></tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="text-muted">Nenhum acesso registrado ainda.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <canvas id="topLinksChart" height="220"></canvas>
+                    </div>
                 </div>
             </div>
 
             <div class="tab-pane fade" id="tab-frequencia">
+                <canvas id="frequenciaChart" height="100" class="mb-3"></canvas>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead><tr><th>Dia</th><th>Acessos</th></tr></thead>
@@ -160,6 +168,8 @@
 </div>
 
 {{ ranking_setores|json_script:"ranking-data" }}
+{{ top_links|json_script:"top-links-data" }}
+{{ frequencia|json_script:"frequencia-data" }}
 {% else %}
 <h1 class="h4">Seus links de BI</h1>
 <p class="text-muted">Selecione um setor no menu ao lado ou acesse diretamente pela lista abaixo.</p>
@@ -211,6 +221,8 @@ new Chart(document.getElementById('linksPorEmpresaChart'), {
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 var rankingData = JSON.parse(document.getElementById('ranking-data').textContent);
+var topLinksData = JSON.parse(document.getElementById('top-links-data').textContent);
+var frequenciaData = JSON.parse(document.getElementById('frequencia-data').textContent);
 new Chart(document.getElementById('rankingChart'), {
     type: 'bar',
     data: {
@@ -225,6 +237,42 @@ new Chart(document.getElementById('rankingChart'), {
     options: {
         responsive: true,
         plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+});
+new Chart(document.getElementById('topLinksChart'), {
+    type: 'bar',
+    data: {
+        labels: topLinksData.map(function (i) { return i.link__nome; }),
+        datasets: [{
+            label: 'Acessos',
+            data: topLinksData.map(function (i) { return i.total; }),
+            backgroundColor: '#2badee',
+            borderRadius: 4,
+        }],
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+});
+new Chart(document.getElementById('frequenciaChart'), {
+    type: 'line',
+    data: {
+        labels: frequenciaData.map(function (i) { return i.dia; }),
+        datasets: [{
+            label: 'Acessos por dia',
+            data: frequenciaData.map(function (i) { return i.total; }),
+            borderColor: '#122949',
+            backgroundColor: 'rgba(43, 173, 238, 0.16)',
+            fill: true,
+            tension: 0.25,
+        }],
+    },
+    options: {
+        responsive: true,
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
     },
 });
