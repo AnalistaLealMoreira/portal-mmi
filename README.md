@@ -7,7 +7,8 @@ Portal corporativo da MMI Incorporações, desenvolvido em Django.
 ### Requisitos
 
 - Python 3.11 ou superior
-- MySQL em produção ou SQLite para desenvolvimento
+- SQL Server em produção ou SQLite para desenvolvimento
+- ODBC Driver 17 (ou superior) para SQL Server no servidor da aplicação
 - Acesso ao servidor web que publicará o portal
 - Um endereço DNS e certificado HTTPS em produção
 
@@ -21,6 +22,42 @@ Copy-Item .env.example .env
 ```
 
 Edite o `.env` antes de iniciar o sistema. Nunca use os valores de exemplo em produção.
+
+### SQL Server em produção
+
+Configure o banco usando variáveis separadas, sem colocar a senha no código:
+
+```env
+DATABASE_BACKEND=mssql
+DATABASE_NAME=portalmmi
+DATABASE_USER=pbi
+DATABASE_PASSWORD=senha-real-do-banco
+DATABASE_HOST=automate.leal.local
+DATABASE_PORT=1433
+DATABASE_DRIVER=ODBC Driver 17 for SQL Server
+DATABASE_EXTRA_PARAMS=TrustServerCertificate=yes;
+```
+
+O login da aplicação precisa ter `db_datareader` e `db_datawriter`. A aplicação
+não precisa de permissão para criar tabelas em produção: a equipe de TI deve
+executar as migrações com uma conta administrativa ou solicitar que o DBA as
+execute:
+
+```powershell
+python manage.py migrate
+```
+
+Para autenticação integrada do Windows durante a manutenção, use uma conta com
+permissão de DDL e configure temporariamente:
+
+```env
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_EXTRA_PARAMS=Trusted_Connection=yes;TrustServerCertificate=yes;
+```
+
+Depois da migração, mantenha o login SQL restrito ao uso da aplicação e não
+compartilhe credenciais em repositórios, scripts ou chamados.
 
 ```env
 SECRET_KEY=uma-chave-longa-e-aleatoria

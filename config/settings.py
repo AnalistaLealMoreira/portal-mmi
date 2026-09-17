@@ -80,9 +80,27 @@ FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": env.db("DATABASE_URL", default="sqlite:///" + str(BASE_DIR / "db.sqlite3"))
-}
+if env("DATABASE_BACKEND", default="sqlite").lower() == "mssql":
+    DATABASES = {
+        "default": {
+            "ENGINE": "mssql",
+            "NAME": env("DATABASE_NAME", default="portalmmi"),
+            "USER": env("DATABASE_USER", default=""),
+            "PASSWORD": env("DATABASE_PASSWORD", default=""),
+            "HOST": env("DATABASE_HOST", default="localhost"),
+            "PORT": env("DATABASE_PORT", default="1433"),
+            "OPTIONS": {
+                "driver": env("DATABASE_DRIVER", default="ODBC Driver 17 for SQL Server"),
+                "extra_params": env(
+                    "DATABASE_EXTRA_PARAMS", default="TrustServerCertificate=yes;"
+                ),
+            },
+        }
+    }
+else:
+    DATABASES = {
+        "default": env.db("DATABASE_URL", default="sqlite:///" + str(BASE_DIR / "db.sqlite3"))
+    }
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
     DATABASES["default"].setdefault("OPTIONS", {})
