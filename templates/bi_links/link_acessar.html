@@ -3,10 +3,26 @@
 {% block content %}
 <div class="bi-report-page">
     <div class="d-flex align-items-center mb-2">
-        <h1 class="h5 mb-0">{{ link.nome }}</h1>
+        <h1 class="h5 mb-0">
+            {{ link.nome }}<span class="shell-watermark-separator"> | </span><span class="shell-watermark">{{ user.email|default:"E-mail não informado" }} | {{ empresa_ativa.nome|default:"Empresa não informada" }} | {% now "d/m/Y H:i" %}</span>
+        </h1>
     </div>
     <div class="bi-report-frame border rounded shadow-sm overflow-hidden">
         <iframe src="{{ link.url }}" title="{{ link.nome }}"></iframe>
+        {% if not user.is_diretor and not user.is_admin_empresa %}
+        <div class="bi-report-audit-watermark" aria-hidden="true">
+            {% for indice in "12" %}
+            <div class="bi-report-audit-watermark-line">
+                <span>Usuário: {{ user.get_full_name|default:user.username }}</span>
+                <span>E-mail: {{ user.email|default:"Não informado" }}</span>
+                <span>IP: {{ request.META.REMOTE_ADDR|default:"Não informado" }}</span>
+                <span>Data: {% now "d/m/Y H:i:s" %}</span>
+                <span>Setor: {{ user.funcionario.setor.nome|default:"Não informado" }}</span>
+                <strong>Proibido o compartilhamento dessa imagem. Sujeito a penalidade de acordo com a LGPD.</strong>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="bi-report-cover" aria-hidden="true">
             <span>MMI Incorporações</span>
         </div>

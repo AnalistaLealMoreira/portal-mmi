@@ -1,4 +1,6 @@
 from django import forms
+import re
+import unicodedata
 
 from accounts.models import Usuario
 from empresas.models import Empresa
@@ -8,6 +10,7 @@ from .models import Funcionario
 
 ROLE_CHOICES_GERENCIAVEIS = [
     (Usuario.Role.NORMAL, Usuario.Role.NORMAL.label),
+    (Usuario.Role.ESPECIAL, Usuario.Role.ESPECIAL.label),
     (Usuario.Role.DIRETOR, Usuario.Role.DIRETOR.label),
     (Usuario.Role.ADMIN_EMPRESA, Usuario.Role.ADMIN_EMPRESA.label),
 ]
@@ -21,6 +24,14 @@ class SetorComEmpresaChoiceField(forms.ModelChoiceField):
         return f"{setor.nome} ({setor.empresa.nome})"
 
 
+class SetorPorEmpresaSelect(forms.Select):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value and getattr(value, "instance", None):
+            option["attrs"]["data-empresa-id"] = value.instance.empresa_id
+        return option
+
+
 class CadastroUsuarioForm(forms.ModelForm):
     """Cadastro único: cria o Usuario (login) e o Funcionario, já vinculados à
     empresa, ao setor e ao nível (role) escolhidos. Quem pode acessar cada
@@ -28,7 +39,12 @@ class CadastroUsuarioForm(forms.ModelForm):
     escolhe a empresa no próprio formulário; Admin de Empresa fica travado na
     sua própria empresa."""
 
-    username = forms.CharField(label="Usuário (login)")
+    username = forms.CharField(
+        label="Usuário (login)",
+        required=False,
+        widget=forms.TextInput(attrs={"readonly": "readonly", "autocomplete": "username"}),
+        help_text="Gerado automaticamente a partir do texto antes do @ no e-mail.",
+    )
     first_name = forms.CharField(label="Nome")
     last_name = forms.CharField(label="Sobrenome", required=False)
     email = forms.EmailField(label="E-mail", required=False)
@@ -57,6 +73,7 @@ class CadastroUsuarioForm(forms.ModelForm):
                 label="Setor",
                 queryset=Setor.objects.select_related("empresa").all(),
                 required=True,
+                widget=SetorPorEmpresaSelect,
             )
             self.order_fields(
                 ["username", "first_name", "last_name", "email", "password", "empresa", "role", "setor"]
@@ -67,14 +84,23 @@ class CadastroUsuarioForm(forms.ModelForm):
             )
             self.fields["setor"].queryset = Setor.objects.filter(empresa=self.empresa_fixa)
 
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-        if Usuario.objects.filter(username=username).exists():
-            raise forms.ValidationError("Já existe um usuário com esse login.")
-        return username
+    @staticmethod
+    def _username_from_email(email):
+        local_part = email.split("@", 1)[0].strip().lower() if "@" in email else ""
+        normalized = unicodedata.normalize("NFKD", local_part).encode("ascii", "ignore").decode()
+        username = re.sub(r"[^a-z0-9._-]+", " ", normalized)
+        return re.sub(r"[._-]+", " ", username).strip().title()
 
     def clean(self):
         cleaned_data = super().clean()
+        email = cleaned_data.get("email", "")
+        username = self._username_from_email(email) or cleaned_data.get("username", "").strip()
+        if not username:
+            self.add_error("username", "Informe um e-mail válido para gerar o login.")
+        elif Usuario.objects.filter(username__iexact=username).exists():
+            self.add_error("username", "Já existe um usuário com esse login.")
+        cleaned_data["username"] = username
+
         empresa = cleaned_data.get("empresa", self.empresa_fixa)
         setor = cleaned_data.get("setor")
         if empresa and setor and setor.empresa_id != empresa.pk:

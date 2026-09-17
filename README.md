@@ -2,12 +2,19 @@
 
 Portal corporativo da MMI Incorporações, desenvolvido em Django.
 
+## Documentação do projeto
+
+- [PRD - Requisitos e critérios de aceite](docs/PRD.md)
+- [Avaliação técnica e operacional](docs/AVALIACAO.md)
+- [Guia HTML de implantação em nuvem](docs/implantacao-nuvem.html)
+
 ## Implantação para a equipe de TI
 
 ### Requisitos
 
 - Python 3.11 ou superior
-- MySQL em produção ou SQLite para desenvolvimento
+- SQL Server em produção ou SQLite para desenvolvimento
+- ODBC Driver 17 (ou superior) para SQL Server no servidor da aplicação
 - Acesso ao servidor web que publicará o portal
 - Um endereço DNS e certificado HTTPS em produção
 
@@ -21,6 +28,74 @@ Copy-Item .env.example .env
 ```
 
 Edite o `.env` antes de iniciar o sistema. Nunca use os valores de exemplo em produção.
+
+### SQL Server em produção
+
+Ambiente SQL Server de produção/homologação:
+
+| Item | Valor |
+|---|---|
+| Servidor | `automate.leal.local` |
+| Banco | `portalmmi` |
+| Porta | `1433` |
+| Driver | `ODBC Driver 17 for SQL Server` |
+| Autenticação da aplicação | Login SQL configurado pela equipe de TI |
+| Migração inicial | Schema e dados do SQLite transferidos para o SQL Server |
+
+O banco foi preparado com as migrações Django e contém as estruturas de
+usuários, empresas, funcionários, setores, links BI, redes permitidas,
+auditoria, sessões e tabelas auxiliares do Django. A carga inicial transferiu
+os dados existentes do SQLite, incluindo os hashes de senha dos usuários e os
+registros de auditoria. Senhas em texto puro não são armazenadas pelo sistema.
+
+Configure o banco usando variáveis separadas, sem colocar a senha no código:
+
+```env
+DATABASE_BACKEND=mssql
+DATABASE_NAME=portalmmi
+DATABASE_USER=pbi
+DATABASE_PASSWORD=senha-real-do-banco
+DATABASE_HOST=automate.leal.local
+DATABASE_PORT=1433
+DATABASE_DRIVER=ODBC Driver 17 for SQL Server
+DATABASE_EXTRA_PARAMS=TrustServerCertificate=yes;
+```
+
+O login da aplicação precisa ter `db_datareader` e `db_datawriter`. A aplicação
+não precisa de permissão para criar tabelas em produção: a equipe de TI deve
+executar as migrações com uma conta administrativa ou solicitar que o DBA as
+execute:
+
+```powershell
+python manage.py migrate
+```
+
+Para autenticação integrada do Windows durante a manutenção, use uma conta com
+permissão de DDL e configure temporariamente:
+
+```env
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_EXTRA_PARAMS=Trusted_Connection=yes;TrustServerCertificate=yes;
+```
+
+Depois da migração, mantenha o login SQL restrito ao uso da aplicação e não
+compartilhe credenciais em repositórios, scripts ou chamados.
+
+#### Checklist de validação do banco
+
+1. Confirmar que o servidor da aplicação enxerga `automate.leal.local:1433`.
+2. Confirmar que o banco `portalmmi` está acessível.
+3. Instalar o `ODBC Driver 17 for SQL Server` no servidor web.
+4. Configurar o `.env` com o login SQL fornecido pelo DBA.
+5. Executar `python manage.py check --deploy`.
+6. Executar `python manage.py migrate --plan` e confirmar que não há migrações pendentes.
+7. Executar `python manage.py collectstatic --noinput`.
+8. Testar login, CRUD de empresas/setores/usuários/links e consulta da auditoria.
+
+O login usado pela aplicação deve possuir `db_datareader` e `db_datawriter`.
+Permissões de criação e alteração de tabelas devem ficar restritas ao DBA ou à
+conta administrativa usada durante as migrações.
 
 ```env
 SECRET_KEY=uma-chave-longa-e-aleatoria
@@ -56,6 +131,7 @@ A regra de acesso é:
 
 - **Administrador**: pode acessar de qualquer rede e gerenciar as redes permitidas.
 - **Diretor**: pode acessar de qualquer rede.
+- **Usuário Especial**: pode acessar de qualquer rede, mas somente os links do seu setor.
 - **Usuário Normal**: só pode acessar quando o IP da requisição pertence a uma rede ativa cadastrada.
 - Sem nenhuma rede ativa cadastrada, usuários normais ficam bloqueados por padrão.
 
@@ -106,6 +182,43 @@ python manage.py collectstatic --noinput
 ```
 
 Depois, reinicie o processo da aplicação e valide login, acesso por rede e abertura dos relatórios.
+
+## Dados e auditoria
+
+O sistema mantém os seguintes dados principais:
+
+- **Usuários**: contas Django, papéis, e-mail, último acesso e hash seguro de senha.
+- **Empresas e funcionários**: vínculo do usuário com empresa e setor.
+- **Setores e links BI**: links ativos, setor responsável e permissões individuais.
+- **Redes permitidas**: redes CIDR autorizadas para usuários normais.
+- **Auditoria**: usuário, link acessado, endereço IP, navegador e data/hora do acesso.
+
+O CRUD é realizado pelo portal usando o ORM do Django. A equipe de TI deve
+aplicar novas migrações antes de atualizar o código da aplicação.
+
+### Marca d’água nos relatórios
+
+Para usuários normais e especiais, o relatório exibido no iframe recebe uma
+camada visual de auditoria com:
+
+- usuário;
+- e-mail;
+- endereço IP da requisição;
+- data e hora;
+- setor;
+- aviso de proibição de compartilhamento conforme a LGPD.
+
+A camada não bloqueia cliques no relatório e não é exibida para **Diretor** ou
+**Admin da Empresa**. O acesso também continua sendo registrado em
+`auditoria.AcessoLog`.
+
+A biblioteca `blind-watermark` foi avaliada, mas sua API embute dados em
+imagens (`img`, `File` ou base64). Como os links podem apontar para relatórios
+HTML em iframe de outro domínio, o navegador não permite alterar os pixels do
+conteúdo externo por política de mesma origem. Por isso, a implementação usa
+uma camada visual sobre o iframe, que é a abordagem compatível com relatórios
+BI externos; a biblioteca pode ser integrada futuramente para imagens que o
+portal controle diretamente.
 
 ## Estrutura relacionada ao controle de rede
 

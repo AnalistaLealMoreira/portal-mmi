@@ -10,6 +10,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from accounts.exclusao_cascata import excluir_link_em_cascata
 from accounts.mixins import AdminOuAdminEmpresaRequiredMixin, EmpresaEscopoMixin
 from auditoria.models import AcessoLog
+from setores.models import Setor
 
 from .forms import LinkBIForm
 from .models import LinkBI
@@ -23,12 +24,27 @@ class LinkBIListView(LoginRequiredMixin, ListView):
     context_object_name = "links"
     paginate_by = 25
 
-    def get_queryset(self):
+    def get_base_queryset(self):
         return (
             LinkBI.objects.visible_to(self.request.user)
             .filter(ativo=True)
             .select_related("setor", "setor__empresa")
         )
+
+    def get_queryset(self):
+        qs = self.get_base_queryset()
+        setor_id = self.request.GET.get("setor")
+        if setor_id:
+            qs = qs.filter(setor_id=setor_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["setores"] = Setor.objects.filter(
+            pk__in=self.get_base_queryset().values_list("setor_id", flat=True)
+        ).order_by("nome")
+        context["setor_selecionado"] = self.request.GET.get("setor", "")
+        return context
 
 
 class LinkBIAcessarView(LoginRequiredMixin, View):
@@ -62,6 +78,8 @@ class LinkBIAdminListView(AdminOuAdminEmpresaRequiredMixin, EmpresaEscopoMixin, 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["empresa"] = self.empresa
+        context["setores"] = Setor.objects.filter(empresa=self.empresa).order_by("nome")
+        context["setor_selecionado"] = self.request.GET.get("setor", "")
         return context
 
 

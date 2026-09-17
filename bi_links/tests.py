@@ -42,6 +42,13 @@ class EscopoDeAcessoTests(TestCase):
             usuario=self.u_diretor_a, empresa=self.empresa_a, setor=self.setor_a1
         )
 
+        self.u_especial_a = Usuario.objects.create_user(
+            "especial_a", password="senha12345", role=Usuario.Role.ESPECIAL
+        )
+        self.f_especial_a = Funcionario.objects.create(
+            usuario=self.u_especial_a, empresa=self.empresa_a, setor=self.setor_a1
+        )
+
         self.u_admin_empresa_a = Usuario.objects.create_user(
             "admin_empresa_a", password="senha12345", role=Usuario.Role.ADMIN_EMPRESA
         )
@@ -105,11 +112,49 @@ class EscopoDeAcessoTests(TestCase):
         self.assertTrue(
             AcessoLog.objects.filter(usuario=self.u_normal_a, link=self.link_a1).exists()
         )
+        self.assertContains(resp, "Usuário: normal_a")
+        self.assertContains(resp, "E-mail: ")
+        self.assertContains(resp, "IP: 127.0.0.1")
+        self.assertContains(resp, "Setor: Financeiro")
+        self.assertContains(resp, "Proibido o compartilhamento dessa imagem")
+
+    def test_diretor_nao_recebe_marca_dagua_de_auditoria(self):
+        self.client.login(username="diretor_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a1.pk}/acessar/")
+        self.assertNotContains(resp, "Proibido o compartilhamento dessa imagem")
+
+    def test_admin_empresa_nao_recebe_marca_dagua_de_auditoria(self):
+        self.client.login(username="admin_empresa_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a1.pk}/acessar/")
+        self.assertNotContains(resp, "Proibido o compartilhamento dessa imagem")
 
     def test_normal_nao_acessa_auditoria(self):
         self.client.login(username="normal_a", password="senha12345")
         resp = self.client.get("/auditoria/")
         self.assertEqual(resp.status_code, 403)
+
+    def test_especial_ve_todos_os_links_do_proprio_setor_de_qualquer_rede(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get("/links/", REMOTE_ADDR="203.0.113.20")
+        nomes = sorted(l.nome for l in resp.context["links"])
+        self.assertEqual(nomes, ["Dashboard Financeiro A", "Dashboard Financeiro A2"])
+
+    def test_especial_nao_acessa_link_de_outro_setor(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a2.pk}/acessar/")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_especial_acessa_link_de_outro_setor_quando_compartilhado(self):
+        self.link_a2.funcionarios_liberados.add(self.f_especial_a)
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a2.pk}/acessar/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, f'src="{self.link_a2.url}"')
+
+    def test_especial_nao_acessa_link_de_outra_empresa(self):
+        self.client.login(username="especial_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_b1.pk}/acessar/")
+        self.assertEqual(resp.status_code, 404)
 
     def test_diretor_ve_todos_os_links_da_propria_empresa(self):
         self.client.login(username="diretor_a", password="senha12345")
@@ -275,6 +320,8 @@ class LinkBIUsuariosLiberadosTests(TestCase):
         self.f2 = Funcionario.objects.create(usuario=u2, empresa=self.empresa, setor=self.setor)
         u3 = Usuario.objects.create_user("colab3", password="senha12345", role=Usuario.Role.NORMAL)
         self.f3 = Funcionario.objects.create(usuario=u3, empresa=self.empresa, setor=self.outro_setor)
+        u4 = Usuario.objects.create_user("especial", password="senha12345", role=Usuario.Role.ESPECIAL)
+        self.f4 = Funcionario.objects.create(usuario=u4, empresa=self.empresa, setor=self.outro_setor)
 
         self.client.login(username="admin_y", password="senha12345")
 
@@ -308,6 +355,21 @@ class LinkBIUsuariosLiberadosTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)  # form re-renderizado com erro
         self.assertFalse(LinkBI.objects.filter(nome="Dashboard Financeiro").exists())
+
+    def test_libera_link_de_outro_setor_para_usuario_especial(self):
+        resp = self.client.post(
+            f"/empresas/{self.empresa.pk}/links/novo/",
+            {
+                "setor": self.setor.pk,
+                "nome": "Dashboard Compartilhado",
+                "url": "https://example.com/compartilhado",
+                "ativo": "True",
+                "usuarios_liberados": [self.f4.pk],
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        link = LinkBI.objects.get(nome="Dashboard Compartilhado")
+        self.assertIn(link, LinkBI.objects.visible_to(self.f4.usuario))
 
     def test_editar_link_troca_quem_tem_acesso(self):
         link = LinkBI.objects.create(

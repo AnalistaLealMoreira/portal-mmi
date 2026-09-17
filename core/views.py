@@ -16,9 +16,8 @@ MINUTOS_PARA_CONSIDERAR_ONLINE = 5
 class DashboardView(TemplateView):
     """Usuário autenticado vê um dashboard diferente por papel:
     - Admin global: visão consolidada de todas as empresas (`_painel_admin`).
-    - Admin de Empresa e Diretor: "Indicadores de Alerta" da própria empresa
-      (`_indicadores_empresa`).
-    - Demais: lista simples dos próprios links de BI."""
+        - Admin de Empresa e Diretor: "Indicadores de Alerta" da própria empresa.
+        - Normal e Especial: indicadores dos próprios acessos e relatórios visíveis."""
 
     template_name = "core/dashboard.html"
 
@@ -31,7 +30,9 @@ class DashboardView(TemplateView):
             context.update(self._painel_admin())
             return context
 
-        context["mostrar_indicadores"] = user.is_admin_empresa or user.is_diretor
+        context["mostrar_indicadores"] = (
+            user.is_admin_empresa or user.is_diretor or user.is_normal or user.is_especial
+        )
 
         if not context["mostrar_indicadores"]:
             context["meus_links"] = (
@@ -61,7 +62,10 @@ class DashboardView(TemplateView):
         cutoff_24h = agora - timedelta(hours=24)
 
         links_visiveis = LinkBI.objects.visible_to(user).filter(ativo=True)
-        acessos_visiveis = AcessoLog.objects.visible_to(user)
+        if user.is_normal or user.is_especial:
+            acessos_visiveis = AcessoLog.objects.filter(usuario=user)
+        else:
+            acessos_visiveis = AcessoLog.objects.visible_to(user)
 
         usuarios_online = Usuario.objects.filter(
             last_seen__gte=cutoff_online,

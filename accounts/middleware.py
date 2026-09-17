@@ -28,7 +28,7 @@ class AtualizarUltimoAcessoMiddleware:
 
 
 class RestringirAcessoPorRedeMiddleware:
-    """Diretores e administradores acessam de qualquer rede.
+    """Diretores, administradores e usuários especiais acessam de qualquer rede.
     Usuários normais só acessam quando o IP pertence a uma rede ativa cadastrada.
     """
 

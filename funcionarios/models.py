@@ -23,7 +23,9 @@ class Funcionario(models.Model):
         if self.pk:
             if self.setor_id and self.setor.empresa_id != self.empresa_id:
                 raise ValidationError("O setor do funcionário deve pertencer à mesma empresa dele.")
-            fora_do_setor = self.links_liberados.exclude(setor=self.setor)
+            fora_do_setor = self.links_liberados.exclude(setor=self.setor).exclude(
+                funcionarios_liberados__usuario__role=Usuario.Role.ESPECIAL
+            )
             if fora_do_setor.exists():
                 raise ValidationError(
                     "Só é possível liberar links do setor ao qual o funcionário está vinculado."

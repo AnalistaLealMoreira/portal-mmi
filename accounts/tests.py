@@ -9,6 +9,7 @@ class RedePermitidaTests(TestCase):
 	def setUp(self):
 		self.admin = Usuario.objects.create_user("admin_rede", password="senha12345", role=Usuario.Role.ADMIN)
 		self.diretor = Usuario.objects.create_user("diretor_rede", password="senha12345", role=Usuario.Role.DIRETOR)
+		self.especial = Usuario.objects.create_user("especial_rede", password="senha12345", role=Usuario.Role.ESPECIAL)
 		self.normal = Usuario.objects.create_user("normal_rede", password="senha12345", role=Usuario.Role.NORMAL)
 		self.factory = RequestFactory()
 
@@ -33,7 +34,7 @@ class RedePermitidaTests(TestCase):
 		self.assertEqual(response, "ok")
 
 	def test_diretor_e_admin_nao_dependem_de_rede(self):
-		for user in (self.admin, self.diretor):
+		for user in (self.admin, self.diretor, self.especial):
 			request = self.factory.get("/dashboard/", REMOTE_ADDR="203.0.113.20")
 			request.user = user
 			response = RestringirAcessoPorRedeMiddleware(lambda request: "ok")(request)
@@ -44,3 +45,6 @@ class RedePermitidaTests(TestCase):
 		self.assertEqual(self.client.get(reverse("accounts:redes")).status_code, 403)
 		self.client.force_login(self.admin)
 		self.assertEqual(self.client.get(reverse("accounts:redes")).status_code, 200)
+
+
+

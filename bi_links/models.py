@@ -10,6 +10,11 @@ class LinkBIQuerySet(models.QuerySet):
             return self
         if (usuario.is_diretor or usuario.is_admin_empresa) and hasattr(usuario, "funcionario"):
             return self.filter(setor__empresa=usuario.funcionario.empresa)
+        if usuario.is_especial and hasattr(usuario, "funcionario"):
+            return self.filter(
+                models.Q(setor=usuario.funcionario.setor)
+                | models.Q(funcionarios_liberados=usuario.funcionario)
+            ).distinct()
         if hasattr(usuario, "funcionario"):
             return self.filter(funcionarios_liberados=usuario.funcionario)
         return self.none()
