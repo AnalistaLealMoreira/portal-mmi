@@ -1,4 +1,5 @@
-from django.test import RequestFactory, TestCase
+from django.core import mail
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from .middleware import RestringirAcessoPorRedeMiddleware
@@ -45,3 +46,46 @@ class RedePermitidaTests(TestCase):
 		self.assertEqual(self.client.get(reverse("accounts:redes")).status_code, 403)
 		self.client.force_login(self.admin)
 		self.assertEqual(self.client.get(reverse("accounts:redes")).status_code, 200)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class RecuperacaoSenhaTests(TestCase):
+	def setUp(self):
+		self.usuario = Usuario.objects.create_user(
+			username="Priscila Martins",
+			email="priscila.martins@mminc.com.br",
+			password="senha-antiga-123",
+		)
+
+	def test_login_direciona_falar_com_mmi_para_email_corporativo(self):
+		response = self.client.get(reverse("accounts:login"))
+		self.assertContains(
+			response,
+			"mailto:yuri.antonov@mminc.com.br?subject=Acesso%20ao%20Portal%20MMI",
+		)
+
+	def test_solicitacao_de_recuperacao_envia_link_por_email(self):
+		response = self.client.post(
+			reverse("accounts:password_reset"),
+			{"email": "priscila.martins@mminc.com.br"},
+		)
+		self.assertRedirects(response, reverse("accounts:password_reset_done"))
+		self.assertEqual(len(mail.outbox), 1)
+		self.assertIn("Redefinição de senha", mail.outbox[0].subject)
+		self.assertIn("redefinir a senha", mail.outbox[0].body)
+
+	def test_link_de_recuperacao_permite_definir_nova_senha(self):
+		self.client.post(
+			reverse("accounts:password_reset"),
+			{"email": "priscila.martins@mminc.com.br"},
+		)
+		link = mail.outbox[0].body.split("http://testserver", 1)[1].split()[0]
+		response = self.client.get(link, follow=True)
+		self.assertEqual(response.status_code, 200)
+		response = self.client.post(
+			response.request["PATH_INFO"],
+			{"new_password1": "nova-senha-123", "new_password2": "nova-senha-123"},
+		)
+		self.assertRedirects(response, reverse("accounts:password_reset_complete"))
+		self.usuario.refresh_from_db()
+		self.assertTrue(self.usuario.check_password("nova-senha-123"))

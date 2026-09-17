@@ -72,7 +72,7 @@
                         <input type="checkbox" name="lembrar">
                         Manter conectado
                     </label>
-                    <a href="https://wa.me/5591992970982?text=Ol%C3%A1!%20Esqueci%20minha%20senha%20do%20Portal%20MMI%2C%20podem%20me%20ajudar%3F" target="_blank" rel="noopener" class="auth-forgot">
+                    <a href="{% url 'accounts:password_reset' %}" class="auth-forgot">
                         Esqueci minha senha
                     </a>
                 </div>
@@ -82,7 +82,7 @@
 
                 <div class="auth-footer-note">
                     <span>Ainda não tem acesso?</span>
-                    <a href="https://wa.me/5591992970982" target="_blank" rel="noopener">Falar com a MMI</a>
+                    <a href="mailto:yuri.antonov@mminc.com.br?subject=Acesso%20ao%20Portal%20MMI">Falar com a MMI</a>
                 </div>
             </form>
         </div>
