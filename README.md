@@ -190,6 +190,30 @@ O sistema mantém os seguintes dados principais:
 O CRUD é realizado pelo portal usando o ORM do Django. A equipe de TI deve
 aplicar novas migrações antes de atualizar o código da aplicação.
 
+### Marca d’água nos relatórios
+
+Para usuários normais e especiais, o relatório exibido no iframe recebe uma
+camada visual de auditoria com:
+
+- usuário;
+- e-mail;
+- endereço IP da requisição;
+- data e hora;
+- setor;
+- aviso de proibição de compartilhamento conforme a LGPD.
+
+A camada não bloqueia cliques no relatório e não é exibida para **Diretor** ou
+**Admin da Empresa**. O acesso também continua sendo registrado em
+`auditoria.AcessoLog`.
+
+A biblioteca `blind-watermark` foi avaliada, mas sua API embute dados em
+imagens (`img`, `File` ou base64). Como os links podem apontar para relatórios
+HTML em iframe de outro domínio, o navegador não permite alterar os pixels do
+conteúdo externo por política de mesma origem. Por isso, a implementação usa
+uma camada visual sobre o iframe, que é a abordagem compatível com relatórios
+BI externos; a biblioteca pode ser integrada futuramente para imagens que o
+portal controle diretamente.
+
 ## Estrutura relacionada ao controle de rede
 
 - `accounts/models.py`: modelo `RedePermitida`.

@@ -112,6 +112,21 @@ class EscopoDeAcessoTests(TestCase):
         self.assertTrue(
             AcessoLog.objects.filter(usuario=self.u_normal_a, link=self.link_a1).exists()
         )
+        self.assertContains(resp, "Usuário: normal_a")
+        self.assertContains(resp, "E-mail: ")
+        self.assertContains(resp, "IP: 127.0.0.1")
+        self.assertContains(resp, "Setor: Financeiro")
+        self.assertContains(resp, "Proibido o compartilhamento dessa imagem")
+
+    def test_diretor_nao_recebe_marca_dagua_de_auditoria(self):
+        self.client.login(username="diretor_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a1.pk}/acessar/")
+        self.assertNotContains(resp, "Proibido o compartilhamento dessa imagem")
+
+    def test_admin_empresa_nao_recebe_marca_dagua_de_auditoria(self):
+        self.client.login(username="admin_empresa_a", password="senha12345")
+        resp = self.client.get(f"/links/{self.link_a1.pk}/acessar/")
+        self.assertNotContains(resp, "Proibido o compartilhamento dessa imagem")
 
     def test_normal_nao_acessa_auditoria(self):
         self.client.login(username="normal_a", password="senha12345")
