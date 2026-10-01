@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal MMI: guia de implantação</title>
+<style>
+:root {
+    --bg: #f6f5f2; --surface: #ffffff; --surface-2: #faf9f7; --line: #e8e5e0;
+    --text: #23211e; --text-2: #5c5852; --text-3: #77726b;
+    --accent: #8a6f4e; --accent-soft: #f3eee7; --code-bg: #1d1b19; --code-text: #ece6dd;
+    --warn-bg: #fbf3e4; --warn-line: #e3c88f; --danger-bg: #fbecea; --danger-line: #e7b4ad;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #141311; --surface: #1c1a18; --surface-2: #211f1c; --line: #34302b;
+        --text: #ece6dd; --text-2: #c2bab0; --text-3: #9a9288;
+        --accent: #d2b48c; --accent-soft: #2a251f; --code-bg: #0f0e0d; --code-text: #ece6dd;
+        --warn-bg: #2a2418; --warn-line: #6b5530; --danger-bg: #2c1c19; --danger-line: #6d3a33;
+    }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+nav.toc {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    padding: 32px 20px 32px 24px; border-right: 1px solid var(--line);
+}
+nav.toc .marca { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); margin: 0 0 4px; }
+nav.toc .titulo { font-weight: 600; margin: 0 0 24px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+nav.toc li { counter-increment: s; }
+nav.toc a {
+    display: block; padding: 6px 10px; border-radius: 8px; color: var(--text-2);
+    text-decoration: none; font-size: 14px;
+}
+nav.toc a::before { content: counter(s) ". "; color: var(--text-3); }
+nav.toc a:hover { background: var(--accent-soft); color: var(--text); }
+main { padding: 40px 48px 80px; min-width: 0; }
+header.capa { margin-bottom: 36px; }
+header.capa .marca { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+h1 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 10px; font-weight: 600; }
+.meta { color: var(--text-3); font-size: 14px; margin: 0; }
+section {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 28px 32px; margin-bottom: 20px; scroll-margin-top: 20px;
+}
+h2 { font-size: 21px; letter-spacing: -.015em; margin: 0 0 14px; font-weight: 600; }
+h2 .num { color: var(--accent); margin-right: 6px; }
+h3 { font-size: 16px; margin: 26px 0 10px; font-weight: 600; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 14px; padding-left: 22px; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+code {
+    font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace; font-size: .86em;
+    background: var(--accent-soft); color: var(--text); padding: 1px 6px; border-radius: 5px;
+}
+.codigo { position: relative; margin: 10px 0 16px; }
+pre {
+    margin: 0; padding: 16px 18px; overflow-x: auto; border-radius: 10px;
+    background: var(--code-bg); color: var(--code-text); font-size: 13px; line-height: 1.55;
+}
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+.copiar {
+    position: absolute; top: 8px; right: 8px; border: 1px solid #4a443d; background: #2a2724; color: #d8d0c5;
+    font: 500 12px/1 inherit; padding: 6px 10px; border-radius: 6px; cursor: pointer; opacity: .85;
+}
+.copiar:hover { opacity: 1; }
+.tabela { overflow-x: auto; margin: 10px 0 16px; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { background: var(--surface-2); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+tr:last-child td { border-bottom: 0; }
+.aviso, .perigo { border-radius: 10px; padding: 12px 16px; margin: 12px 0 16px; border: 1px solid; }
+.aviso { background: var(--warn-bg); border-color: var(--warn-line); }
+.perigo { background: var(--danger-bg); border-color: var(--danger-line); }
+.aviso p:last-child, .perigo p:last-child { margin-bottom: 0; }
+ol.passos { counter-reset: p; list-style: none; padding-left: 0; }
+ol.passos > li { counter-increment: p; position: relative; padding-left: 40px; margin-bottom: 18px; }
+ol.passos > li::before {
+    content: counter(p); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+}
+.check { list-style: none; padding-left: 0; }
+.check li { display: flex; gap: 10px; align-items: flex-start; }
+.check input { margin-top: 5px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+footer { color: var(--text-3); font-size: 13px; text-align: center; margin-top: 32px; }
+@media (max-width: 900px) {
+    .layout { display: block; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 20px 16px; }
+    main { padding: 24px 16px 60px; }
+    section { padding: 20px 18px; }
+}
+@media print {
+    body { background: #fff; color: #000; font-size: 12px; }
+    .layout { display: block; }
+    nav.toc, .copiar { display: none; }
+    main { padding: 0; }
+    section { border: 0; padding: 0; margin-bottom: 18px; break-inside: auto; }
+    pre { background: #f4f4f4; color: #000; border: 1px solid #ddd; white-space: pre-wrap; }
+    h2 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Sumário">
+    <p class="marca">MMI Incorporações</p>
+    <p class="titulo">Guia de implantação</p>
+    <ol>
+        <li><a href="#visao-geral">Visão geral</a></li>
+        <li><a href="#requisitos">Requisitos do servidor</a></li>
+        <li><a href="#banco">Banco de dados</a></li>
+        <li><a href="#instalacao">Instalação passo a passo</a></li>
+        <li><a href="#env">Configuração do .env</a></li>
+        <li><a href="#servidor-web">Servidor web</a></li>
+        <li><a href="#validacao">Validação após a implantação</a></li>
+        <li><a href="#operacao">Atualizações e operação</a></li>
+    </ol>
+</nav>
+
+<main>
+<header class="capa">
+    <p class="marca">Portal MMI · Documentação para a TI</p>
+    <h1>Guia de implantação em servidor</h1>
+    <p class="meta">Versão de 01/10/2026 · Laravel 13 / PHP 8.4 · Repositório <a href="https://github.com/AnalistaLealMoreira/portal-mmi">AnalistaLealMoreira/portal-mmi</a></p>
+</header>
+
+<!-- 1 -->
+<section id="visao-geral">
+    <h2><span class="num">1.</span>Visão geral</h2>
+    <p>O Portal MMI é uma aplicação <strong>Laravel 13 / PHP 8.4</strong> que dá acesso controlado aos relatórios de Power BI da MMI Incorporações. Ela substitui a versão em Django e usa o mesmo banco SQL Server (<code>portalmmi</code>), sem migração de dados.</p>
+    <ul>
+        <li><strong>Código-fonte:</strong> <a href="https://github.com/AnalistaLealMoreira/portal-mmi">github.com/AnalistaLealMoreira/portal-mmi</a>, branch <code>main</code>.</li>
+        <li><strong>Banco:</strong> SQL Server <code>automate.leal.local</code>, banco <code>portalmmi</code>. As tabelas são as mesmas do Django e as senhas usam o mesmo formato (<code>pbkdf2_sha256</code>), então os usuários entram com as senhas que já tinham.</li>
+        <li><strong>Sessão e cache:</strong> em arquivo, na pasta <code>storage/</code>. Não há Redis, fila nem tabela extra no banco.</li>
+        <li><strong>Front-end:</strong> Bootstrap 5, Bootstrap Icons, Chart.js e a fonte Inter, carregados de CDN (<code>cdn.jsdelivr.net</code> e <code>fonts.googleapis.com</code>). Não é preciso Node.js nem build de front-end.</li>
+        <li><strong>Relatórios:</strong> cada link de BI abre num iframe dentro do portal. Todo acesso fica registrado na tabela <code>auditoria_acessolog</code>.</li>
+    </ul>
+</section>
+
+<!-- 2 -->
+<section id="requisitos">
+    <h2><span class="num">2.</span>Requisitos do servidor</h2>
+    <p>O servidor precisa de PHP 8.3 ou superior com as extensões de SQL Server e de acesso à porta 1433 do banco. A aplicação foi desenvolvida e testada com <strong>PHP 8.4.26 NTS x64</strong> no Windows Server 2019.</p>
+    <div class="tabela"><table>
+        <thead><tr><th>Item</th><th>Versão / detalhe</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>Sistema operacional</td><td>Windows Server 2019 ou superior (ou Linux)</td><td>Este guia detalha o IIS; Apache e Nginx estão na seção do servidor web</td></tr>
+            <tr><td>PHP</td><td>8.3 ou superior (recomendado 8.4 NTS x64)</td><td>No IIS, use a versão <strong>NTS</strong> (Non Thread Safe)</td></tr>
+            <tr><td>Extensões PHP</td><td><code>openssl</code>, <code>mbstring</code>, <code>intl</code>, <code>fileinfo</code>, <code>curl</code>, <code>pdo_sqlsrv</code>, <code>sqlsrv</code></td><td><code>pdo_sqlsrv</code>/<code>sqlsrv</code> 5.13 ou superior, da mesma versão e arquitetura do PHP</td></tr>
+            <tr><td>Driver ODBC</td><td>Microsoft ODBC Driver 17 ou 18 for SQL Server (x64)</td><td>Necessário para as extensões <code>sqlsrv</code></td></tr>
+            <tr><td>Composer</td><td>2.x</td><td>Só para instalar as dependências; pode rodar em outra máquina e copiar a pasta <code>vendor</code></td></tr>
+            <tr><td>Git</td><td>Qualquer versão recente</td><td>Para clonar e atualizar a partir do GitHub</td></tr>
+            <tr><td>Servidor web</td><td>IIS 10 com FastCGI e URL Rewrite 2.1, ou Apache/Nginx com PHP-FPM</td><td>A raiz do site aponta para a pasta <code>public/</code></td></tr>
+            <tr><td>Rede</td><td>Acesso a <code>automate.leal.local:1433</code></td><td>Testar com <code>Test-NetConnection automate.leal.local -Port 1433</code></td></tr>
+            <tr><td>Internet (navegador do usuário)</td><td><code>cdn.jsdelivr.net</code> e <code>fonts.googleapis.com</code></td><td>Bootstrap, ícones, Chart.js e a fonte vêm de CDN</td></tr>
+            <tr><td>Certificado</td><td>Certificado TLS válido para o domínio do portal</td><td>Obrigatório em produção (cookies seguros e HSTS)</td></tr>
+        </tbody>
+    </table></div>
+    <p>Downloads oficiais: <a href="https://windows.php.net/download/">PHP para Windows</a>, <a href="https://learn.microsoft.com/sql/connect/php/download-drivers-php-sql-server">drivers PHP para SQL Server</a>, <a href="https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server">ODBC Driver for SQL Server</a>, <a href="https://www.iis.net/downloads/microsoft/url-rewrite">URL Rewrite para IIS</a> e <a href="https://getcomposer.org/download/">Composer</a>.</p>
+    <p>Para conferir as extensões, rode <code>php -m</code>: a lista precisa conter <code>pdo_sqlsrv</code> e <code>sqlsrv</code>.</p>
+</section>
+
+<!-- 3 -->
+<section id="banco">
+    <h2><span class="num">3.</span>Banco de dados</h2>
+    <p>Não é preciso criar nem migrar nada: o portal Laravel usa as tabelas que o Django já criou no banco <code>portalmmi</code>. Basta um login SQL com leitura e escrita.</p>
+    <div class="tabela"><table>
+        <thead><tr><th>Tabela</th><th>Conteúdo</th></tr></thead>
+        <tbody>
+            <tr><td><code>accounts_usuario</code></td><td>Usuários, papéis e senhas (<code>pbkdf2_sha256</code>)</td></tr>
+            <tr><td><code>accounts_redepermitida</code></td><td>Redes (CIDR) de onde usuários normais podem acessar</td></tr>
+            <tr><td><code>empresas_empresa</code></td><td>Empresas</td></tr>
+            <tr><td><code>setores_setor</code></td><td>Setores de cada empresa</td></tr>
+            <tr><td><code>funcionarios_funcionario</code></td><td>Vínculo usuário → empresa e setor</td></tr>
+            <tr><td><code>funcionarios_funcionario_links_liberados</code></td><td>Links liberados para cada funcionário</td></tr>
+            <tr><td><code>bi_links_linkbi</code></td><td>Links dos relatórios de BI</td></tr>
+            <tr><td><code>auditoria_acessolog</code></td><td>Registro de cada acesso a relatório</td></tr>
+        </tbody>
+    </table></div>
+    <p><strong>Permissões do login da aplicação:</strong> apenas <code>db_datareader</code> e <code>db_datawriter</code> no banco <code>portalmmi</code>. O login usado até hoje pelo portal Django (<code>pbi</code>) serve; quem define é o DBA.</p>
+    <div class="codigo"><pre><code>USE portalmmi;
+CREATE USER [pbi] FOR LOGIN [pbi];   -- se o usuário ainda não existir no banco
+ALTER ROLE db_datareader ADD MEMBER [pbi];
+ALTER ROLE db_datawriter ADD MEMBER [pbi];</code></pre></div>
+    <p><strong>Migração:</strong> opcional. <code>php artisan migrate</code> só cria as tabelas que ainda não existem; num banco vindo do Django, cria apenas a tabela de controle <code>migrations</code>. Se for rodar, use uma conta com permissão de DDL; no dia a dia, o login da aplicação não precisa dela.</p>
+    <p><strong>Datas:</strong> gravadas em UTC (como no Django) e exibidas no fuso <code>America/Sao_Paulo</code>.</p>
+    <p><strong>Convive com o Django:</strong> os dois portais podem usar o mesmo banco ao mesmo tempo durante a transição. Um usuário criado ou com a senha trocada em um deles entra no outro com a mesma senha.</p>
+    <div class="perigo"><p><strong>Antes de colocar no ar:</strong> faça um backup completo do banco <code>portalmmi</code>. As exclusões pelo portal são em cascata (setor, usuário e link) e apagam também o histórico de auditoria ligado a eles.</p></div>
+</section>
+
+<!-- 4 -->
+<section id="instalacao">
+    <h2><span class="num">4.</span>Instalação passo a passo</h2>
+    <p>Os comandos abaixo são para PowerShell no Windows Server, instalando em <code>C:\inetpub\portal-mmi</code>. Ajuste o caminho se for outro.</p>
+    <ol class="passos">
+        <li><strong>Clonar o repositório</strong>
+            <div class="codigo"><pre><code>cd C:\inetpub
+git clone https://github.com/AnalistaLealMoreira/portal-mmi.git
+cd portal-mmi</code></pre></div></li>
+        <li><strong>Instalar as dependências PHP</strong> (sem os pacotes de desenvolvimento)
+            <div class="codigo"><pre><code>composer install --no-dev --optimize-autoloader</code></pre></div></li>
+        <li><strong>Criar o <code>.env</code></strong> a partir do modelo e preencher as variáveis de produção (<a href="#env">seção 5</a>)
+            <div class="codigo"><pre><code>Copy-Item .env.example .env
+notepad .env</code></pre></div></li>
+        <li><strong>Gerar a chave da aplicação.</strong> Rode uma única vez: trocar a chave depois derruba todas as sessões abertas.
+            <div class="codigo"><pre><code>php artisan key:generate</code></pre></div></li>
+        <li><strong>Testar a conexão com o banco</strong>
+            <div class="codigo"><pre><code>php artisan about
+php artisan db:show</code></pre></div>
+            <p>O <code>db:show</code> deve listar as tabelas do portal (<code>accounts_usuario</code>, <code>bi_links_linkbi</code> etc.).</p></li>
+        <li><strong>Gerar os caches de produção</strong>
+            <div class="codigo"><pre><code>php artisan config:cache
+php artisan route:cache
+php artisan view:cache</code></pre></div>
+            <p>Depois de qualquer mudança no <code>.env</code>, rode <code>php artisan config:cache</code> de novo: com o cache ativo, o <code>.env</code> não é relido.</p></li>
+        <li><strong>Dar permissão de escrita</strong> ao usuário do pool do IIS em <code>storage</code> e <code>bootstrap\cache</code> (sessões, cache, views compiladas e logs ficam ali)
+            <div class="codigo"><pre><code>icacls storage /grant "IIS AppPool\PortalMMI:(OI)(CI)M" /T
+icacls bootstrap\cache /grant "IIS AppPool\PortalMMI:(OI)(CI)M" /T</code></pre></div>
+            <p>O restante do projeto precisa só de leitura. O <code>.env</code> não deve ficar legível para outros usuários do servidor.</p></li>
+        <li><strong>Configurar o site no servidor web</strong>, apontando para a pasta <code>public</code> (<a href="#servidor-web">seção 6</a>).</li>
+        <li><strong>Criar o primeiro administrador</strong>, apenas se o banco for novo. No banco atual os usuários do Django já existem.
+            <div class="codigo"><pre><code>php artisan portal:criar-admin admin --email=admin@mmi.com.br</code></pre></div>
+            <p>O comando pede a senha e a confirmação no terminal.</p></li>
+    </ol>
+    <div class="aviso"><p>Nunca use <code>php artisan serve</code> em produção: ele é um servidor de desenvolvimento, de um processo só.</p></div>
+</section>
+
+<!-- 5 -->
+<section id="env">
+    <h2><span class="num">5.</span>Configuração do .env</h2>
+    <p>O <code>.env</code> fica só no servidor e guarda a senha do banco: ele está no <code>.gitignore</code> e nunca deve ir para o GitHub. Modelo de produção:</p>
+    <div class="codigo"><pre><code>APP_NAME="Portal MMI"
+APP_ENV=production
+APP_KEY=                      # preenchido pelo php artisan key:generate
+APP_DEBUG=false
+APP_URL=https://portal.mmi.com.br
+
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=pt_BR
+
+HASH_DRIVER=django
+PBKDF2_ITERATIONS=1000000
+PORTAL_TIMEZONE=America/Sao_Paulo
+
+PORTAL_FORCE_HTTPS=true
+PORTAL_HSTS_SECONDS=31536000
+
+LOG_CHANNEL=stack
+LOG_STACK=daily
+LOG_LEVEL=warning
+
+DB_CONNECTION=sqlsrv
+DB_HOST=automate.leal.local
+DB_PORT=1433
+DB_DATABASE=portalmmi
+DB_USERNAME=pbi
+DB_PASSWORD=senha-fornecida-pelo-DBA
+DB_TRUST_SERVER_CERTIFICATE=true
+
+SESSION_DRIVER=file
+SESSION_LIFETIME=20160
+SESSION_SECURE_COOKIE=true
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+MAIL_MAILER=log</code></pre></div>
+    <div class="tabela"><table>
+        <thead><tr><th>Variável</th><th>Valor em produção</th><th>Por quê</th></tr></thead>
+        <tbody>
+            <tr><td><code>APP_ENV</code> / <code>APP_DEBUG</code></td><td><code>production</code> / <code>false</code></td><td>Com <code>APP_DEBUG=true</code>, erros mostram código e variáveis na tela</td></tr>
+            <tr><td><code>APP_KEY</code></td><td>Gerada uma vez</td><td>Criptografa sessão e cookies; se mudar, todos são deslogados</td></tr>
+            <tr><td><code>APP_URL</code></td><td>Endereço público com <code>https://</code></td><td>Usado para montar links</td></tr>
+            <tr><td><code>HASH_DRIVER</code></td><td><code>django</code></td><td><strong>Não alterar:</strong> é o que mantém as senhas atuais válidas</td></tr>
+            <tr><td><code>PORTAL_FORCE_HTTPS</code></td><td><code>true</code></td><td>Redireciona HTTP para HTTPS e envia o cabeçalho HSTS</td></tr>
+            <tr><td><code>SESSION_SECURE_COOKIE</code></td><td><code>true</code></td><td>O cookie de sessão só trafega por HTTPS</td></tr>
+            <tr><td><code>SESSION_LIFETIME</code></td><td><code>20160</code> (2 semanas)</td><td>Vale quando o usuário marca "Manter conectado"; sem isso, a sessão acaba ao fechar o navegador</td></tr>
+            <tr><td><code>DB_TRUST_SERVER_CERTIFICATE</code></td><td><code>true</code></td><td>Necessário se o SQL Server usa certificado autoassinado; com certificado válido, use <code>false</code></td></tr>
+            <tr><td><code>LOG_STACK</code> / <code>LOG_LEVEL</code></td><td><code>daily</code> / <code>warning</code></td><td>Um arquivo de log por dia em <code>storage\logs</code></td></tr>
+        </tbody>
+    </table></div>
+    <p><code>APP_URL=https://portal.mmi.com.br</code> é um exemplo: use o domínio definido pela TI.</p>
+</section>
+
+<!-- 6 -->
+<section id="servidor-web">
+    <h2><span class="num">6.</span>Servidor web</h2>
+    <p>A raiz do site deve ser a pasta <strong><code>public</code></strong>, nunca a raiz do projeto: só assim o <code>.env</code>, o código e os logs ficam fora do alcance do navegador. Todas as requisições que não sejam arquivos de <code>public</code> vão para <code>public\index.php</code>.</p>
+
+    <h3>IIS (Windows Server)</h3>
+    <ol>
+        <li>Instale o IIS com o recurso <strong>CGI</strong> (Server Manager → Web Server → Application Development → CGI) e o módulo <strong>URL Rewrite 2.1</strong>.</li>
+        <li>Em <strong>Handler Mappings</strong>, registre o PHP via FastCGI: <code>*.php</code> → <code>FastCgiModule</code> → <code>C:\php\php-cgi.exe</code>. Se preferir, use o PHP Manager for IIS.</li>
+        <li>Crie um <strong>Application Pool</strong> <code>PortalMMI</code> (.NET CLR: <em>No Managed Code</em>, Pipeline: <em>Integrated</em>).</li>
+        <li>Crie o site apontando o <strong>Physical path</strong> para <code>C:\inetpub\portal-mmi\public</code>, no pool <code>PortalMMI</code>, com binding HTTPS (porta 443) e o certificado do domínio.</li>
+        <li>O arquivo <code>public\web.config</code> já vem no repositório, com o conteúdo abaixo. Ele faz no IIS o mesmo que o <code>.htaccess</code> faz no Apache.</li>
+    </ol>
+    <div class="codigo"><pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;configuration&gt;
+  &lt;system.webServer&gt;
+    &lt;defaultDocument&gt;
+      &lt;files&gt;
+        &lt;clear /&gt;
+        &lt;add value="index.php" /&gt;
+      &lt;/files&gt;
+    &lt;/defaultDocument&gt;
+    &lt;directoryBrowse enabled="false" /&gt;
+    &lt;rewrite&gt;
+      &lt;rules&gt;
+        &lt;rule name="Remove barra final" stopProcessing="true"&gt;
+          &lt;match url="^(.*)/$" /&gt;
+          &lt;conditions&gt;
+            &lt;add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" /&gt;
+          &lt;/conditions&gt;
+          &lt;action type="Redirect" redirectType="Permanent" url="/{R:1}" /&gt;
+        &lt;/rule&gt;
+        &lt;rule name="Laravel" stopProcessing="true"&gt;
+          &lt;match url="^" ignoreCase="false" /&gt;
+          &lt;conditions logicalGrouping="MatchAll"&gt;
+            &lt;add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" /&gt;
+            &lt;add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" /&gt;
+          &lt;/conditions&gt;
+          &lt;action type="Rewrite" url="index.php" appendQueryString="true" /&gt;
+        &lt;/rule&gt;
+      &lt;/rules&gt;
+    &lt;/rewrite&gt;
+    &lt;httpErrors existingResponse="PassThrough" /&gt;
+  &lt;/system.webServer&gt;
+&lt;/configuration&gt;</code></pre></div>
+    <p>No <code>php.ini</code> usado pelo IIS, confira: <code>extension=pdo_sqlsrv</code> e <code>extension=sqlsrv</code> ativas, <code>cgi.fix_pathinfo=1</code>, <code>fastcgi.impersonate=1</code> e <code>date.timezone=UTC</code>.</p>
+
+    <h3>Apache ou Nginx (Linux)</h3>
+    <ul>
+        <li><strong>Apache:</strong> <code>DocumentRoot</code> na pasta <code>public</code>, com <code>AllowOverride All</code> e <code>mod_rewrite</code> ativo. O <code>public/.htaccess</code> já está no repositório.</li>
+        <li><strong>Nginx + PHP-FPM:</strong> <code>root</code> na pasta <code>public</code>, com <code>try_files $uri $uri/ /index.php?$query_string;</code> e o bloco <code>location ~ \.php$</code> apontando para o PHP-FPM.</li>
+    </ul>
+
+    <h3>HTTPS, HSTS e proxy reverso</h3>
+    <ul>
+        <li>Com <code>PORTAL_FORCE_HTTPS=true</code>, o portal redireciona HTTP para HTTPS e envia <code>Strict-Transport-Security</code> com <code>includeSubDomains; preload</code>. O navegador passa a exigir HTTPS <strong>em todos os subdomínios</strong> por 1 ano. Se algum subdomínio ainda usa HTTP, avise antes de ligar.</li>
+        <li>Se o HTTPS terminar num <strong>proxy reverso ou balanceador</strong> (e não no próprio IIS), o portal enxerga a requisição como HTTP e entra em <strong>loop de redirecionamento</strong>. Nesse caso é preciso ajustar o código para confiar no proxy (<code>trustProxies</code> em <code>bootstrap/app.php</code>, só para o IP do proxy). Avise o desenvolvimento antes.</li>
+        <li>O bloqueio por rede dos usuários normais usa o IP de origem (<code>REMOTE_ADDR</code>). Atrás de um proxy, todos chegariam com o IP do proxy; o mesmo ajuste de <code>trustProxies</code> resolve. Nunca confie em <code>X-Forwarded-For</code> vindo direto da internet.</li>
+    </ul>
+
+    <h3>Relatórios no iframe</h3>
+    <p>O portal envia <code>X-Frame-Options: DENY</code>, então ele próprio não pode ser embutido em outro site. Os relatórios do Power BI são abertos <em>dentro</em> do portal, então o navegador do usuário precisa alcançar <code>app.powerbi.com</code> e o domínio de cada link cadastrado.</p>
+</section>
+
+<!-- 7 -->
+<section id="validacao">
+    <h2><span class="num">7.</span>Validação após a implantação</h2>
+    <p>Com o site no ar, entre com um usuário Administrador já existente e passe pela lista abaixo. Use registros de teste nos cadastros: o banco é o de produção. As marcações desta página não são salvas.</p>
+    <h3>Infraestrutura</h3>
+    <ul class="check">
+        <li><input type="checkbox" aria-label="Concluído"><span><code>php -m</code> lista <code>pdo_sqlsrv</code> e <code>sqlsrv</code></span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span><code>php artisan about</code> mostra <code>Environment: production</code>, <code>Debug Mode: OFF</code> e os caches de config, rotas e views ativos</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span><code>https://&lt;domínio&gt;/up</code> responde 200 (verificação de saúde do Laravel, útil para monitoramento)</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span><code>http://&lt;domínio&gt;</code> redireciona para <code>https://</code></span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span><code>https://&lt;domínio&gt;/.env</code> e <code>https://&lt;domínio&gt;/composer.json</code> <strong>não</strong> são acessíveis</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>O pool do IIS consegue gravar em <code>storage\logs</code> (aparece o arquivo <code>laravel-AAAA-MM-DD.log</code> após o primeiro erro ou aviso)</span></li>
+    </ul>
+    <h3>Aplicação</h3>
+    <ul class="check">
+        <li><input type="checkbox" aria-label="Concluído"><span>Login com nome de usuário e com e-mail, usando uma senha que já existia no Django</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>"Manter conectado" desmarcado: a sessão acaba ao fechar o navegador</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>Cadastro, edição e exclusão de empresa, setor, usuário e link de BI (com registros de teste)</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>Abrir um relatório: o Power BI carrega no iframe e a marca d'água LGPD aparece para usuários Normal e Especial</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>O acesso aparece em <strong>Auditoria</strong>, com usuário, data/hora (horário de Brasília) e IP real do usuário</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>Usuário <strong>Normal</strong> fora de uma rede permitida vê "Acesso restrito à rede da empresa"; dentro dela, entra</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>Diretor, Admin da Empresa e Usuário Especial entram de qualquer rede</span></li>
+        <li><input type="checkbox" aria-label="Concluído"><span>O painel (Visão geral) mostra os gráficos e a tela Relatórios mostra os cards</span></li>
+    </ul>
+</section>
+
+<!-- 8 -->
+<section id="operacao">
+    <h2><span class="num">8.</span>Atualizações e operação</h2>
+    <h3>Publicar uma nova versão</h3>
+    <div class="codigo"><pre><code>cd C:\inetpub\portal-mmi
+php artisan down                       # página de manutenção (503)
+git pull origin main
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan up</code></pre></div>
+    <p>Anote o commit em produção antes do <code>git pull</code> (<code>git rev-parse --short HEAD</code>): é ele que se usa para voltar atrás.</p>
+
+    <h3>Voltar à versão anterior</h3>
+    <div class="codigo"><pre><code>cd C:\inetpub\portal-mmi
+php artisan down
+git checkout &lt;commit-anterior&gt;
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan up</code></pre></div>
+    <p>Como o portal não altera a estrutura do banco, voltar o código basta: não há migração para desfazer. Para voltar a seguir o <code>main</code> depois, rode <code>git checkout main</code>.</p>
+
+    <h3>Rotina</h3>
+    <div class="tabela"><table>
+        <thead><tr><th>O quê</th><th>Onde / como</th></tr></thead>
+        <tbody>
+            <tr><td>Logs da aplicação</td><td><code>storage\logs\laravel-AAAA-MM-DD.log</code>, um por dia. Apague ou arquive os antigos periodicamente</td></tr>
+            <tr><td>Sessões</td><td><code>storage\framework\sessions</code>. O Laravel limpa as expiradas sozinho</td></tr>
+            <tr><td>Backup</td><td>Banco <code>portalmmi</code> (rotina do DBA) e o arquivo <code>.env</code>. O código está no GitHub</td></tr>
+            <tr><td>Monitoramento</td><td><code>https://&lt;domínio&gt;/up</code> deve responder 200</td></tr>
+            <tr><td>Limpar caches</td><td><code>php artisan optimize:clear</code>, e depois os três comandos de cache</td></tr>
+        </tbody>
+    </table></div>
+
+    <h3>Problemas comuns</h3>
+    <div class="tabela"><table>
+        <thead><tr><th>Sintoma</th><th>Causa provável</th><th>Solução</th></tr></thead>
+        <tbody>
+            <tr><td>Erro 500 sem detalhes</td><td>Permissão de escrita em <code>storage</code> ou <code>bootstrap\cache</code>, ou <code>.env</code> inválido</td><td>Ver o log do dia em <code>storage\logs</code>; conferir o <code>icacls</code> da instalação</td></tr>
+            <tr><td><code>could not find driver</code></td><td><code>pdo_sqlsrv</code> não carregada no PHP do IIS</td><td>Conferir o <code>php.ini</code> usado pelo IIS (<code>php --ini</code>) e a versão/arquitetura da DLL</td></tr>
+            <tr><td><code>SSL Provider: certificate chain was issued by an authority that is not trusted</code></td><td>Certificado do SQL Server não confiável</td><td><code>DB_TRUST_SERVER_CERTIFICATE=true</code> e <code>php artisan config:cache</code></td></tr>
+            <tr><td><code>Login failed for user</code></td><td>Usuário ou senha do banco errados, ou sem acesso ao <code>portalmmi</code></td><td>Conferir com o DBA; depois <code>php artisan config:cache</code></td></tr>
+            <tr><td>Mudei o <code>.env</code> e nada mudou</td><td>O cache de configuração está ativo</td><td><code>php artisan config:cache</code></td></tr>
+            <tr><td>Redirecionamento infinito</td><td>HTTPS termina num proxy e <code>PORTAL_FORCE_HTTPS=true</code></td><td>Ver "HTTPS, HSTS e proxy reverso" na <a href="#servidor-web">seção 6</a></td></tr>
+            <tr><td>Páginas sem estilo</td><td>O navegador não alcança <code>cdn.jsdelivr.net</code> ou <code>fonts.googleapis.com</code></td><td>Liberar esses domínios no proxy/firewall dos usuários</td></tr>
+            <tr><td>Relatório em branco no iframe</td><td>O site do relatório bloqueia ser embutido, ou o usuário não tem licença/acesso no Power BI</td><td>Testar o link direto no navegador</td></tr>
+            <tr><td>Usuário normal sempre bloqueado</td><td>Nenhuma rede ativa cadastrada, ou o IP visto é o do proxy</td><td>Cadastrar a rede em <strong>Redes permitidas</strong>; ver a seção do proxy</td></tr>
+        </tbody>
+    </table></div>
+    <p>Dúvidas sobre o código: o <code>README.md</code> do repositório descreve a estrutura, as regras de acesso e a interface.</p>
+</section>
+
+<footer>Portal MMI · Guia de implantação · 01/10/2026</footer>
+</main>
+</div>
+
+<script>
+// Botão "Copiar" em cada bloco de código.
+document.querySelectorAll(".codigo").forEach(function (bloco) {
+    var botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "copiar";
+    botao.textContent = "Copiar";
+    botao.addEventListener("click", function () {
+        var texto = bloco.querySelector("code").innerText;
+        var feito = function () { botao.textContent = "Copiado"; setTimeout(function () { botao.textContent = "Copiar"; }, 1500); };
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(texto).then(feito, function () { botao.textContent = "Erro"; });
+        } else {
+            var area = document.createElement("textarea");
+            area.value = texto; document.body.appendChild(area); area.select();
+            try { document.execCommand("copy"); feito(); } catch (e) { botao.textContent = "Erro"; }
+            area.remove();
+        }
+    });
+    bloco.appendChild(botao);
+});
+</script>
+</body>
+</html>
