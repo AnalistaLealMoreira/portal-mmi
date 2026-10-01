@@ -76,6 +76,12 @@ php artisan portal:criar-admin admin --email=admin@empresa.com
 
 ## Produção (SQL Server)
 
+O passo a passo completo para a equipe de TI (requisitos, IIS, `.env`, checklist
+de validação, atualização e rollback) está no
+[guia de implantação](documenta%C3%A7%C3%A3o%20projeto/guia-implantacao.html)
+(`documentação projeto/guia-implantacao.html`; baixe o arquivo e abra no
+navegador). O resumo está abaixo.
+
 Configure o `.env` (nunca versione senhas):
 
 ```env
