@@ -155,6 +155,61 @@ visual com usuário, e-mail, IP, data/hora, setor e o aviso de proibição de
 compartilhamento conforme a LGPD. A camada não bloqueia cliques e não aparece
 para Diretor nem Admin da Empresa. Todo acesso é registrado em `auditoria_acessolog`.
 
+## Interface
+
+O visual segue a identidade MMI (carvão e bege), com tipografia **Inter** em
+pesos leves (400/500/600) e fundos off-white quentes.
+
+- **Relatórios em cards**: a tela "Relatórios" mostra os links em grade,
+  agrupados por setor, com o card inteiro clicável. No topo, "Acessados
+  recentemente" traz os 4 últimos relatórios abertos pelo usuário, vindos da
+  auditoria.
+- **Gráficos na paleta da marca**: os gráficos do painel (Chart.js) usam carvão
+  e bege, com grade e eixos discretos.
+- **Título único**: o título da página fica só na barra do topo (com
+  breadcrumb); abaixo vêm uma linha de descrição e as ações.
+- **Exclusão em janela**: "Excluir" abre uma confirmação na própria lista,
+  informando o que a cascata vai apagar (ex.: "2 links de BI e 3 usuários
+  vinculados"). Uma empresa com setores ou usuários mostra o aviso, mas não
+  oferece a exclusão. Sem JavaScript, o link leva à página de confirmação.
+- **Ações das tabelas**: ícones discretos de editar e excluir (o vermelho só
+  aparece no hover). Em Usuários, a lista mostra as iniciais, o e-mail e o
+  nível numa etiqueta colorida.
+- **Busca**: Usuários (nome, login ou e-mail), Links de BI e Relatórios têm
+  busca por texto (`?q=`). A Auditoria filtra por usuário ou relatório e por
+  período (`?de=` e `?ate=`, no fuso do portal).
+- **Formulários em seções**: blocos "Dados pessoais" e "Acesso" em duas
+  colunas, com largura máxima de 760px e as ações num rodapé.
+- **Tela do relatório**: barra compacta com os botões "Relatórios" e "Tela
+  cheia". A tela cheia inclui a marca d'água da LGPD.
+- **Mensagens em toast**: os avisos aparecem no canto inferior direito. Os de
+  sucesso somem em 5 segundos; os de erro ficam até serem fechados.
+- **Telas vazias**: ícone, explicação e botão para criar o primeiro item. A
+  busca sem resultado tem um texto próprio.
+- **Acessibilidade**: foco visível para quem navega pelo teclado; com a sidebar
+  recolhida, passar o mouse ou o foco num ícone mostra o nome do item. Os textos
+  secundários atendem ao contraste WCAG AA. A sidebar ocupa a altura toda e só o
+  conteúdo rola, com barras de rolagem discretas.
+
+### Onde fica
+
+| Arquivo | Conteúdo |
+|---|---|
+| `public/static/css/refino.css` | Refino visual, carregado depois de `portal.css`, `shell.css` e `auth.css` |
+| `public/static/js/shell.js` | Sidebar, janela de exclusão, toasts e dicas do menu |
+| `resources/views/components/cabecalho.blade.php` | `<x-cabecalho>`: descrição e ações da página |
+| `resources/views/components/acoes.blade.php` | `<x-acoes>`: botões de editar e excluir da linha |
+| `resources/views/components/busca.blade.php` | `<x-busca>`: campo de busca (`?q=`) |
+| `resources/views/components/vazio.blade.php` | `<x-vazio>`: tela vazia |
+| `resources/views/partials/modal_excluir.blade.php` | Janela de confirmação de exclusão |
+
+Para dar a uma página um título próprio na barra do topo, use
+`@section('titulo', '...')`; sem ele, vale o nome do item ativo do menu.
+
+Ao alterar `refino.css` ou `shell.js`, aumente o `?v=` do `<link>` ou do
+`<script>` em `layouts/app.blade.php` (e em `accounts/login.blade.php`, no caso
+do CSS), para o navegador não usar a versão antiga em cache.
+
 ## Testes
 
 ```powershell
@@ -163,4 +218,5 @@ php artisan test
 
 Os testes rodam em SQLite em memória e cobrem login (inclusive com hash gerado
 pelo Django), restrição por rede, visibilidade de links por papel, escopo por
-empresa, cadastros, exclusões em cascata, auditoria e dashboards.
+empresa, cadastros, exclusões em cascata, auditoria, dashboards, buscas, "acessados
+recentemente" e a janela de exclusão.
