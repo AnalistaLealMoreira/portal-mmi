@@ -1,0 +1,36 @@
+# Portal MMI (Laravel) - requisitos para rodar o projeto
+# ------------------------------------------------------------------
+# Projeto PHP: as bibliotecas são instaladas pelo Composer a partir do
+# composer.json / composer.lock (equivalente ao "pip install -r" do Django).
+# Este arquivo lista o que precisa existir na máquina ANTES do
+# "composer install". Passo a passo: manual-configuracao-local.html
+
+# === Software ===
+php>=8.3                  # recomendado 8.4 x64 (Windows: NTS ou TS servem para desenvolvimento)
+composer>=2.0
+git                       # qualquer versão recente
+
+# === Extensões do PHP (habilitar no php.ini) ===
+openssl
+mbstring
+intl
+fileinfo
+curl
+zip                       # deixa o Composer baixar pacotes mais rápido
+pdo_sqlite                # banco local de desenvolvimento (database/database.sqlite)
+sqlite3
+
+# === Opcional: conectar no SQL Server (homologação/produção) ===
+# Microsoft ODBC Driver 17 ou 18 for SQL Server (x64)
+# pdo_sqlsrv>=5.13          # mesma versão e arquitetura do PHP
+# sqlsrv>=5.13
+
+# === Não é necessário ===
+# Node.js / npm: o front-end (Bootstrap 5, Bootstrap Icons, Chart.js, fonte Inter)
+# vem de CDN; não há build de front-end.
+
+# === Bibliotecas PHP (instaladas pelo "composer install") ===
+# laravel/framework ^13.17
+# laravel/tinker ^3.0
+# dev: phpunit/phpunit ^12.5, laravel/pint ^1.27, mockery/mockery ^1.6,
+#      fakerphp/faker ^1.23, nunomaduro/collision ^8.6, laravel/pail ^1.2

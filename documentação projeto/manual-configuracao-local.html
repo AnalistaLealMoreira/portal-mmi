@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal MMI: configuração local</title>
+<style>
+:root {
+    --bg: #f6f5f2; --surface: #ffffff; --surface-2: #faf9f7; --line: #e8e5e0;
+    --text: #23211e; --text-2: #5c5852; --text-3: #77726b;
+    --accent: #8a6f4e; --accent-soft: #f3eee7; --code-bg: #1d1b19; --code-text: #ece6dd;
+    --warn-bg: #fbf3e4; --warn-line: #e3c88f; --danger-bg: #fbecea; --danger-line: #e7b4ad;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #141311; --surface: #1c1a18; --surface-2: #211f1c; --line: #34302b;
+        --text: #ece6dd; --text-2: #c2bab0; --text-3: #9a9288;
+        --accent: #d2b48c; --accent-soft: #2a251f; --code-bg: #0f0e0d; --code-text: #ece6dd;
+        --warn-bg: #2a2418; --warn-line: #6b5530; --danger-bg: #2c1c19; --danger-line: #6d3a33;
+    }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+nav.toc {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    padding: 32px 20px 32px 24px; border-right: 1px solid var(--line);
+}
+nav.toc .marca { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); margin: 0 0 4px; }
+nav.toc .titulo { font-weight: 600; margin: 0 0 24px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+nav.toc li { counter-increment: s; }
+nav.toc a {
+    display: block; padding: 6px 10px; border-radius: 8px; color: var(--text-2);
+    text-decoration: none; font-size: 14px;
+}
+nav.toc a::before { content: counter(s) ". "; color: var(--text-3); }
+nav.toc a:hover { background: var(--accent-soft); color: var(--text); }
+main { padding: 40px 48px 80px; min-width: 0; }
+header.capa { margin-bottom: 36px; }
+header.capa .marca { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+h1 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 10px; font-weight: 600; }
+.meta { color: var(--text-3); font-size: 14px; margin: 0; }
+section {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 28px 32px; margin-bottom: 20px; scroll-margin-top: 20px;
+}
+h2 { font-size: 21px; letter-spacing: -.015em; margin: 0 0 14px; font-weight: 600; }
+h2 .num { color: var(--accent); margin-right: 6px; }
+h3 { font-size: 16px; margin: 26px 0 10px; font-weight: 600; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 14px; padding-left: 22px; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+code {
+    font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace; font-size: .86em;
+    background: var(--accent-soft); color: var(--text); padding: 1px 6px; border-radius: 5px;
+}
+.codigo { position: relative; margin: 10px 0 16px; }
+pre {
+    margin: 0; padding: 16px 18px; overflow-x: auto; border-radius: 10px;
+    background: var(--code-bg); color: var(--code-text); font-size: 13px; line-height: 1.55;
+}
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+.copiar {
+    position: absolute; top: 8px; right: 8px; border: 1px solid #4a443d; background: #2a2724; color: #d8d0c5;
+    font: 500 12px/1 inherit; padding: 6px 10px; border-radius: 6px; cursor: pointer; opacity: .85;
+}
+.copiar:hover { opacity: 1; }
+.tabela { overflow-x: auto; margin: 10px 0 16px; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { background: var(--surface-2); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+tr:last-child td { border-bottom: 0; }
+.aviso, .perigo { border-radius: 10px; padding: 12px 16px; margin: 12px 0 16px; border: 1px solid; }
+.aviso { background: var(--warn-bg); border-color: var(--warn-line); }
+.perigo { background: var(--danger-bg); border-color: var(--danger-line); }
+.aviso p:last-child, .perigo p:last-child { margin-bottom: 0; }
+ol.passos { counter-reset: p; list-style: none; padding-left: 0; }
+ol.passos > li { counter-increment: p; position: relative; padding-left: 40px; margin-bottom: 18px; }
+ol.passos > li::before {
+    content: counter(p); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+}
+.check { list-style: none; padding-left: 0; }
+.check li { display: flex; gap: 10px; align-items: flex-start; }
+.check input { margin-top: 5px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+footer { color: var(--text-3); font-size: 13px; text-align: center; margin-top: 32px; }
+@media (max-width: 900px) {
+    .layout { display: block; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 20px 16px; }
+    main { padding: 24px 16px 60px; }
+    section { padding: 20px 18px; }
+}
+@media print {
+    body { background: #fff; color: #000; font-size: 12px; }
+    .layout { display: block; }
+    nav.toc, .copiar { display: none; }
+    main { padding: 0; }
+    section { border: 0; padding: 0; margin-bottom: 18px; break-inside: auto; }
+    pre { background: #f4f4f4; color: #000; border: 1px solid #ddd; white-space: pre-wrap; }
+    h2 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Sumário">
+    <p class="marca">MMI Incorporações</p>
+    <p class="titulo">Configuração local</p>
+    <ol>
+        <li><a href="#visao-geral">Visão geral</a></li>
+        <li><a href="#requisitos">Requisitos (requirements)</a></li>
+        <li><a href="#php">Instalar e configurar o PHP</a></li>
+        <li><a href="#composer-git">Composer e Git</a></li>
+        <li><a href="#projeto">Baixar e configurar o projeto</a></li>
+        <li><a href="#banco">Banco de dados local</a></li>
+        <li><a href="#rodar">Rodar e acessar</a></li>
+        <li><a href="#sqlserver">Opcional: SQL Server</a></li>
+        <li><a href="#dia-a-dia">Dia a dia do desenvolvimento</a></li>
+        <li><a href="#problemas">Problemas comuns</a></li>
+    </ol>
+</nav>
+
+<main>
+<header class="capa">
+    <p class="marca">Portal MMI · Documentação para desenvolvedores</p>
+    <h1>Manual de configuração da máquina local</h1>
+    <p class="meta">Versão de 01/10/2026 · Laravel 13 / PHP 8.4 · Repositório <a href="https://github.com/AnalistaLealMoreira/portal-mmi">AnalistaLealMoreira/portal-mmi</a></p>
+</header>
+
+<!-- 1 -->
+<section id="visao-geral">
+    <h2><span class="num">1.</span>Visão geral</h2>
+    <p>Este manual prepara um computador Windows para rodar o Portal MMI em modo de desenvolvimento. No fim, o portal estará em <code>http://localhost:8000</code>, usando um banco <strong>SQLite local</strong>, sem tocar no banco de produção.</p>
+    <ul>
+        <li><strong>Tempo estimado:</strong> 20 a 30 minutos.</li>
+        <li><strong>Lista de requisitos:</strong> o arquivo <code>requirements.txt</code>, nesta mesma pasta, resume tudo o que a máquina precisa ter.</li>
+        <li><strong>Bibliotecas PHP:</strong> não se instalam uma a uma. O <code>composer install</code> lê o <code>composer.json</code>/<code>composer.lock</code> e baixa tudo para a pasta <code>vendor/</code> (é o equivalente ao <code>pip install -r requirements.txt</code> do Django).</li>
+        <li><strong>Front-end:</strong> Bootstrap, ícones, Chart.js e a fonte vêm de CDN. <strong>Não é preciso Node.js</strong> nem build de front-end.</li>
+    </ul>
+    <div class="perigo"><p><strong>Não aponte a máquina de desenvolvimento para o banco de produção.</strong> Use o SQLite local (padrão do <code>.env.example</code>). Conectar no SQL Server só com um banco de homologação e com autorização (seção 8).</p></div>
+</section>
+
+<!-- 2 -->
+<section id="requisitos">
+    <h2><span class="num">2.</span>Requisitos (requirements)</h2>
+    <div class="tabela"><table>
+        <thead><tr><th>Item</th><th>Versão</th><th>Para quê</th></tr></thead>
+        <tbody>
+            <tr><td>Windows</td><td>10, 11 ou Server 2019+ (x64)</td><td>Também roda em Linux/macOS com os mesmos passos adaptados</td></tr>
+            <tr><td>PHP</td><td>8.3 ou superior (recomendado <strong>8.4 x64</strong>)</td><td>Executa o Laravel</td></tr>
+            <tr><td>Extensões PHP</td><td><code>openssl</code>, <code>mbstring</code>, <code>intl</code>, <code>fileinfo</code>, <code>curl</code>, <code>zip</code>, <code>pdo_sqlite</code>, <code>sqlite3</code></td><td>Laravel, Composer e banco SQLite local</td></tr>
+            <tr><td>Composer</td><td>2.x</td><td>Instala as bibliotecas PHP do projeto</td></tr>
+            <tr><td>Git</td><td>Qualquer versão recente</td><td>Clonar e versionar o código</td></tr>
+            <tr><td>Editor</td><td>VS Code (sugestão) com a extensão <em>PHP Intelephense</em></td><td>Opcional</td></tr>
+            <tr><td>Internet</td><td>Acesso a <code>github.com</code>, <code>packagist.org</code>, <code>cdn.jsdelivr.net</code>, <code>fonts.googleapis.com</code></td><td>Clonar, baixar pacotes e carregar o visual no navegador</td></tr>
+            <tr><td><em>Opcional</em>: ODBC Driver for SQL Server</td><td>17 ou 18 (x64)</td><td>Só para conectar no SQL Server (seção 8)</td></tr>
+            <tr><td><em>Opcional</em>: <code>pdo_sqlsrv</code> / <code>sqlsrv</code></td><td>5.13 ou superior</td><td>Só para conectar no SQL Server (seção 8)</td></tr>
+        </tbody>
+    </table></div>
+    <h3>Bibliotecas instaladas pelo Composer</h3>
+    <div class="tabela"><table>
+        <thead><tr><th>Pacote</th><th>Versão</th><th>Uso</th></tr></thead>
+        <tbody>
+            <tr><td><code>laravel/framework</code></td><td>^13.17</td><td>Framework da aplicação</td></tr>
+            <tr><td><code>laravel/tinker</code></td><td>^3.0</td><td>Console interativo (<code>php artisan tinker</code>)</td></tr>
+            <tr><td><code>phpunit/phpunit</code></td><td>^12.5</td><td>Testes automatizados (só desenvolvimento)</td></tr>
+            <tr><td><code>laravel/pint</code></td><td>^1.27</td><td>Formatação do código (só desenvolvimento)</td></tr>
+            <tr><td><code>mockery/mockery</code>, <code>fakerphp/faker</code>, <code>nunomaduro/collision</code>, <code>laravel/pail</code></td><td>conforme <code>composer.lock</code></td><td>Apoio aos testes e logs (só desenvolvimento)</td></tr>
+        </tbody>
+    </table></div>
+</section>
+
+<!-- 3 -->
+<section id="php">
+    <h2><span class="num">3.</span>Instalar e configurar o PHP</h2>
+    <ol class="passos">
+        <li>Baixe o PHP 8.4 <strong>x64</strong> (arquivo <em>Zip</em>, NTS ou TS) em <a href="https://windows.php.net/download/">windows.php.net/download</a> e extraia para <code>C:\php</code>.
+            <p>Se o Windows reclamar de <code>VCRUNTIME140.dll</code>, instale o <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe">Visual C++ Redistributable x64</a>.</p></li>
+        <li>Adicione <code>C:\php</code> ao <code>PATH</code> do usuário (PowerShell, depois feche e abra o terminal):
+            <div class="codigo"><pre><code>[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\php", "User")</code></pre></div></li>
+        <li>Crie o <code>php.ini</code> a partir do modelo de desenvolvimento:
+            <div class="codigo"><pre><code>Copy-Item C:\php\php.ini-development C:\php\php.ini</code></pre></div></li>
+        <li>Abra <code>C:\php\php.ini</code> e ajuste as linhas abaixo (tire o <code>;</code> do começo):
+            <div class="codigo"><pre><code>extension_dir = "ext"
+
+extension=curl
+extension=fileinfo
+extension=intl
+extension=mbstring
+extension=openssl
+extension=pdo_sqlite
+extension=sqlite3
+extension=zip
+
+memory_limit = 512M
+date.timezone = America/Sao_Paulo</code></pre></div></li>
+        <li>Confira a versão e as extensões:
+            <div class="codigo"><pre><code>php -v
+php -m | Select-String "curl|fileinfo|intl|mbstring|openssl|pdo_sqlite|sqlite3|zip"</code></pre></div>
+            <p>As oito extensões precisam aparecer na lista.</p></li>
+    </ol>
+</section>
+
+<!-- 4 -->
+<section id="composer-git">
+    <h2><span class="num">4.</span>Composer e Git</h2>
+    <ol class="passos">
+        <li>Instale o Composer com o instalador <a href="https://getcomposer.org/Composer-Setup.exe">Composer-Setup.exe</a>. Quando ele pedir o PHP, aponte para <code>C:\php\php.exe</code>.</li>
+        <li>Instale o Git em <a href="https://git-scm.com/download/win">git-scm.com</a> (opções padrão).</li>
+        <li>Configure seu nome e e-mail no Git (uma vez por máquina):
+            <div class="codigo"><pre><code>git config --global user.name "Seu Nome"
+git config --global user.email "seu.email@empresa.com"</code></pre></div></li>
+        <li>Confira:
+            <div class="codigo"><pre><code>composer -V
+git --version</code></pre></div></li>
+    </ol>
+    <div class="aviso"><p>O repositório é privado: peça acesso a <a href="https://github.com/AnalistaLealMoreira/portal-mmi">AnalistaLealMoreira/portal-mmi</a> antes de clonar. No primeiro <code>git clone</code>, o Git abre o navegador para você entrar na conta do GitHub.</p></div>
+</section>
+
+<!-- 5 -->
+<section id="projeto">
+    <h2><span class="num">5.</span>Baixar e configurar o projeto</h2>
+    <ol class="passos">
+        <li>Clone o repositório numa pasta de trabalho (exemplo: <code>D:\</code>):
+            <div class="codigo"><pre><code>cd D:\
+git clone https://github.com/AnalistaLealMoreira/portal-mmi.git PortalMMI_L
+cd PortalMMI_L</code></pre></div></li>
+        <li>Instale as bibliotecas PHP (cria a pasta <code>vendor/</code>):
+            <div class="codigo"><pre><code>composer install</code></pre></div></li>
+        <li>Crie o arquivo de configuração local e gere a chave da aplicação:
+            <div class="codigo"><pre><code>Copy-Item .env.example .env
+php artisan key:generate</code></pre></div></li>
+    </ol>
+    <p>O <code>.env.example</code> já vem pronto para desenvolvimento. Os valores que importam:</p>
+    <div class="tabela"><table>
+        <thead><tr><th>Variável</th><th>Valor local</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td><code>APP_ENV</code> / <code>APP_DEBUG</code></td><td><code>local</code> / <code>true</code></td><td>Mostra os erros detalhados na tela</td></tr>
+            <tr><td><code>APP_URL</code></td><td><code>http://localhost:8000</code></td><td>Endereço do <code>php artisan serve</code></td></tr>
+            <tr><td><code>DB_CONNECTION</code></td><td><code>sqlite</code></td><td>Usa <code>database/database.sqlite</code></td></tr>
+            <tr><td><code>HASH_DRIVER</code></td><td><code>django</code></td><td>Senhas no formato <code>pbkdf2_sha256</code>, compatíveis com o portal Django</td></tr>
+            <tr><td><code>PORTAL_FORCE_HTTPS</code></td><td><code>false</code></td><td>Em produção é <code>true</code>; localmente não há HTTPS</td></tr>
+            <tr><td><code>SESSION_DRIVER</code> / <code>CACHE_STORE</code></td><td><code>file</code></td><td>Ficam em <code>storage/</code>, sem tabelas extras</td></tr>
+        </tbody>
+    </table></div>
+    <div class="aviso"><p>O <code>.env</code> não vai para o Git (está no <code>.gitignore</code>). Nunca coloque senhas reais em <code>.env.example</code>, no código ou em commits.</p></div>
+</section>
+
+<!-- 6 -->
+<section id="banco">
+    <h2><span class="num">6.</span>Banco de dados local</h2>
+    <p>O arquivo do SQLite não vem no repositório (<code>/database/*.sqlite</code> está no <code>.gitignore</code>). Há duas opções:</p>
+    <h3>Opção A: banco novo, vazio (recomendado)</h3>
+    <ol class="passos">
+        <li>Crie o arquivo vazio e as tabelas do portal:
+            <div class="codigo"><pre><code>New-Item -ItemType File database\database.sqlite
+php artisan migrate</code></pre></div>
+            <p>A migração cria as mesmas tabelas do Django (<code>accounts_usuario</code>, <code>empresas_empresa</code>, <code>setores_setor</code>, <code>bi_links_linkbi</code> etc.).</p></li>
+        <li>Crie o primeiro administrador (o comando pede a senha duas vezes):
+            <div class="codigo"><pre><code>php artisan portal:criar-admin admin --email=admin@empresa.com</code></pre></div></li>
+        <li>Entre no portal com esse usuário e cadastre empresas, setores, links de BI e usuários pelas próprias telas.</li>
+    </ol>
+    <h3>Opção B: cópia de um banco existente</h3>
+    <p>Se alguém da equipe passar um <code>database.sqlite</code> já preenchido (ou o <code>db.sqlite3</code> do portal Django), copie para <code>database\database.sqlite</code> e rode <code>php artisan migrate</code>: ele só cria o que faltar e não altera os dados. Os usuários entram com as mesmas senhas.</p>
+    <div class="aviso"><p>Uma cópia com dados reais contém e-mails e acessos de pessoas (LGPD). Não envie esse arquivo por canais abertos e apague quando não precisar mais.</p></div>
+</section>
+
+<!-- 7 -->
+<section id="rodar">
+    <h2><span class="num">7.</span>Rodar e acessar</h2>
+    <div class="codigo"><pre><code>php artisan serve</code></pre></div>
+    <p>Abra <a href="http://localhost:8000">http://localhost:8000</a> e entre com o administrador criado. O login aceita nome de usuário ou e-mail. Para parar o servidor, use <code>Ctrl+C</code> no terminal.</p>
+    <p>Para usar outra porta (por exemplo, se a 8000 estiver ocupada):</p>
+    <div class="codigo"><pre><code>php artisan serve --port=8001</code></pre></div>
+    <h3>Confirmar que está tudo certo</h3>
+    <ul class="check">
+        <li><input type="checkbox" id="c1"><label for="c1"><code>php artisan about</code> mostra Environment <code>local</code> e Database <code>sqlite</code></label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">A tela de login abre com o visual da MMI (se aparecer sem estilo, veja a seção 10)</label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">O administrador entra e vê o painel</label></li>
+        <li><input type="checkbox" id="c4"><label for="c4"><code>php artisan test</code> termina sem falhas</label></li>
+    </ul>
+    <div class="aviso"><p>Usuários com papel <strong>Usuário Normal</strong> só entram de redes cadastradas em <strong>Redes permitidas</strong>. Para testar esse papel localmente, cadastre <code>127.0.0.1/32</code> e <code>::1/128</code> como redes ativas.</p></div>
+</section>
+
+<!-- 8 -->
+<section id="sqlserver">
+    <h2><span class="num">8.</span>Opcional: conectar no SQL Server</h2>
+    <p>Só faça isto com um banco de <strong>homologação</strong> e com autorização do DBA. Para o dia a dia, o SQLite basta.</p>
+    <ol class="passos">
+        <li>Instale o <a href="https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server">ODBC Driver 18 for SQL Server</a> (x64).</li>
+        <li>Baixe os <a href="https://learn.microsoft.com/sql/connect/php/download-drivers-php-sql-server">drivers PHP para SQL Server</a> (5.13 ou superior). Copie para <code>C:\php\ext</code> as DLLs da sua versão do PHP, por exemplo <code>php_pdo_sqlsrv_84_nts_x64.dll</code> e <code>php_sqlsrv_84_nts_x64.dll</code> (use <code>ts</code> se o seu PHP for Thread Safe; <code>php -v</code> mostra qual é).</li>
+        <li>Habilite no <code>php.ini</code> com o nome exato dos arquivos:
+            <div class="codigo"><pre><code>extension=php_pdo_sqlsrv_84_nts_x64.dll
+extension=php_sqlsrv_84_nts_x64.dll</code></pre></div></li>
+        <li>Teste a rede e confira as extensões:
+            <div class="codigo"><pre><code>Test-NetConnection automate.leal.local -Port 1433
+php -m | Select-String "sqlsrv"</code></pre></div></li>
+        <li>No <code>.env</code>, troque o bloco do banco (peça as credenciais ao DBA):
+            <div class="codigo"><pre><code>DB_CONNECTION=sqlsrv
+DB_HOST=servidor-de-homologacao
+DB_PORT=1433
+DB_DATABASE=portalmmi_homolog
+DB_USERNAME=usuario
+DB_PASSWORD=senha
+DB_TRUST_SERVER_CERTIFICATE=true</code></pre></div></li>
+        <li>Limpe o cache de configuração e confira: <code>php artisan config:clear</code> e <code>php artisan about</code>.</li>
+    </ol>
+</section>
+
+<!-- 9 -->
+<section id="dia-a-dia">
+    <h2><span class="num">9.</span>Dia a dia do desenvolvimento</h2>
+    <div class="tabela"><table>
+        <thead><tr><th>Tarefa</th><th>Comando</th></tr></thead>
+        <tbody>
+            <tr><td>Atualizar o código</td><td><code>git pull</code> e depois <code>composer install</code></td></tr>
+            <tr><td>Aplicar novas migrações</td><td><code>php artisan migrate</code></td></tr>
+            <tr><td>Rodar os testes</td><td><code>php artisan test</code> (usam SQLite em memória; não mexem no seu banco)</td></tr>
+            <tr><td>Formatar o código</td><td><code>vendor\bin\pint</code></td></tr>
+            <tr><td>Limpar caches após mudar o <code>.env</code></td><td><code>php artisan optimize:clear</code></td></tr>
+            <tr><td>Ver as rotas</td><td><code>php artisan route:list</code></td></tr>
+            <tr><td>Console interativo</td><td><code>php artisan tinker</code></td></tr>
+            <tr><td>Ver o log</td><td><code>storage\logs\laravel-AAAA-MM-DD.log</code></td></tr>
+        </tbody>
+    </table></div>
+    <p>Fluxo sugerido para alterações: crie uma branch (<code>git switch -c minha-alteracao</code>), rode <code>php artisan test</code> antes do commit e abra um Pull Request para a <code>main</code>.</p>
+    <p>Ao mudar <code>public/static/css/refino.css</code> ou <code>public/static/js/shell.js</code>, aumente o <code>?v=</code> correspondente em <code>resources/views/layouts/app.blade.php</code> para o navegador não usar a versão em cache. Os demais detalhes de arquitetura estão no <code>README.md</code>.</p>
+</section>
+
+<!-- 10 -->
+<section id="problemas">
+    <h2><span class="num">10.</span>Problemas comuns</h2>
+    <div class="tabela"><table>
+        <thead><tr><th>Sintoma</th><th>Causa provável e solução</th></tr></thead>
+        <tbody>
+            <tr><td><code>php</code> não é reconhecido como comando</td><td><code>C:\php</code> não está no <code>PATH</code>, ou o terminal foi aberto antes da mudança. Feche e abra o terminal (seção 3, passo 2).</td></tr>
+            <tr><td><code>composer install</code> reclama de extensão faltando (<code>ext-intl</code>, <code>ext-fileinfo</code>…)</td><td>Extensão desabilitada no <code>php.ini</code>. Confira o <code>extension_dir = "ext"</code> e as linhas <code>extension=</code> (seção 3, passo 4). <code>php --ini</code> mostra qual <code>php.ini</code> está em uso.</td></tr>
+            <tr><td>Erro de SSL ao baixar pacotes</td><td><code>extension=openssl</code> desabilitada, ou proxy da rede. Habilite a extensão e, se houver proxy, configure <code>HTTPS_PROXY</code>.</td></tr>
+            <tr><td><em>No application encryption key has been specified</em></td><td>Faltou <code>php artisan key:generate</code>.</td></tr>
+            <tr><td><em>Database file at path … database.sqlite does not exist</em></td><td>Crie o arquivo (seção 6, opção A).</td></tr>
+            <tr><td><em>could not find driver</em></td><td>Falta <code>pdo_sqlite</code> (ou <code>pdo_sqlsrv</code>, se estiver usando SQL Server) no <code>php.ini</code>.</td></tr>
+            <tr><td>Página sem estilo, sem ícones ou sem gráficos</td><td>O navegador não alcança <code>cdn.jsdelivr.net</code>/<code>fonts.googleapis.com</code>. Verifique internet, proxy ou bloqueio do firewall.</td></tr>
+            <tr><td>Login de Usuário Normal recusado por rede</td><td>Cadastre <code>127.0.0.1/32</code> e <code>::1/128</code> em Redes permitidas (seção 7).</td></tr>
+            <tr><td>Mudança no <code>.env</code> não surte efeito</td><td>Configuração em cache. Rode <code>php artisan optimize:clear</code>.</td></tr>
+            <tr><td><em>Failed to listen on 127.0.0.1:8000</em></td><td>Porta ocupada. Use <code>php artisan serve --port=8001</code>.</td></tr>
+        </tbody>
+    </table></div>
+</section>
+
+<footer>Portal MMI · Manual de configuração local · Para implantar em servidor, veja <a href="guia-implantacao.html">guia-implantacao.html</a></footer>
+</main>
+</div>
+
+<script>
+// Botão "Copiar" em cada bloco de código.
+document.querySelectorAll(".codigo").forEach(function (bloco) {
+    var botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "copiar";
+    botao.textContent = "Copiar";
+    botao.addEventListener("click", function () {
+        var texto = bloco.querySelector("code").innerText;
+        var feito = function () { botao.textContent = "Copiado"; setTimeout(function () { botao.textContent = "Copiar"; }, 1500); };
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(texto).then(feito, function () { botao.textContent = "Erro"; });
+        } else {
+            var area = document.createElement("textarea");
+            area.value = texto; document.body.appendChild(area); area.select();
+            try { document.execCommand("copy"); feito(); } catch (e) { botao.textContent = "Erro"; }
+            area.remove();
+        }
+    });
+    bloco.appendChild(botao);
+});
+</script>
+</body>
+</html>

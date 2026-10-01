@@ -54,6 +54,13 @@ pelas telas do próprio portal.
 
 ## Instalação (desenvolvimento)
 
+Para preparar uma máquina nova do zero (PHP, extensões, Composer, Git, banco
+local e problemas comuns), siga o
+[manual de configuração local](documenta%C3%A7%C3%A3o%20projeto/manual-configuracao-local.html).
+A lista do que a máquina precisa ter está em
+[`documentação projeto/requirements.txt`](documenta%C3%A7%C3%A3o%20projeto/requirements.txt).
+Resumo:
+
 ```powershell
 composer install
 Copy-Item .env.example .env
