@@ -1,5 +1,7 @@
 /* Tela de login pública (accounts/login.html). */
 
+html, body { margin: 0; padding: 0; }
+
 @keyframes axionDrift {
     0% { transform: translate3d(0, 0, 0) scale(1); }
     50% { transform: translate3d(-2%, 1.5%, 0) scale(1.05); }
@@ -17,8 +19,10 @@
     --ax-muted-2: #958d84;
     --ax-muted-3: #716b65;
 
+    box-sizing: border-box;
     position: relative;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     width: 100%;
     overflow: hidden;
     margin: 0;
@@ -29,9 +33,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(24px, 5vw, 72px);
+    padding: clamp(20px, 4vw, 56px);
 }
-.auth-page * { box-sizing: border-box; }
+.auth-page, .auth-page * { box-sizing: border-box; }
 .auth-page input, .auth-page button { font-family: inherit; }
 .auth-page ::placeholder { color: #5d7392; }
 .auth-page a { color: var(--ax-orange); text-decoration: none; }
@@ -148,7 +152,7 @@
 .auth-page-footer a { color: var(--ax-muted-2); }
 
 @media (max-width: 760px) {
-    .auth-page { align-items: flex-start; padding: 42px 20px 74px; }
+    .auth-page { height: auto; min-height: 100dvh; overflow: auto; align-items: flex-start; padding: 42px 20px 74px; }
     .auth-grid { grid-template-columns: 1fr; gap: 38px; }
     .auth-intro img { height: 54px; margin-bottom: 34px; }
     .auth-lede { font-size: 15px; }
