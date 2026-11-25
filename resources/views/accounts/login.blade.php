@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('static/css/auth.css') }}?v=10">
-    <link rel="stylesheet" href="{{ asset('static/css/refino.css') }}?v=10">
+    <link rel="stylesheet" href="{{ asset('static/css/auth.css') }}?v=11">
+    <link rel="stylesheet" href="{{ asset('static/css/refino.css') }}?v=11">
 </head>
 <body>
 <div class="auth-page">

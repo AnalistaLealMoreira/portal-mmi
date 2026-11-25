@@ -4,7 +4,7 @@
 <script>
 (function () {
     try {
-        if (localStorage.getItem("axion.portal.sidebar") === "1") {
+        if (localStorage.getItem("axion.portal.sidebar") === "1" && window.matchMedia("(min-width: 992px)").matches) {
             document.documentElement.classList.add("shell-collapsed");
         }
     } catch (e) {}
@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('static/css/portal.css') }}">
-    <link rel="stylesheet" href="{{ asset('static/css/shell.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('static/css/shell.css') }}?v=5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('static/css/refino.css') }}?v=9">
+    <link rel="stylesheet" href="{{ asset('static/css/refino.css') }}?v=10">
 </head>
 <body>
 @auth
@@ -201,7 +201,7 @@
 @endauth
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('static/js/shell.js') }}?v=5"></script>
+<script src="{{ asset('static/js/shell.js') }}?v=6"></script>
 @stack('scripts')
 </body>
 </html>

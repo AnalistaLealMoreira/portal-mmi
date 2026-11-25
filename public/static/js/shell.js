@@ -106,3 +106,19 @@
     desktop.addEventListener("change", atualizar);
     atualizar();
 })();
+
+/* Celular: as tabelas de listagem viram cartões; cada célula recebe o nome da coluna. */
+(function () {
+    "use strict";
+    document.querySelectorAll(".shell-main table.shadow-sm").forEach(function (tabela) {
+        var titulos = Array.prototype.map.call(tabela.querySelectorAll("thead th"), function (th) {
+            return th.textContent.trim();
+        });
+        tabela.querySelectorAll("tbody tr").forEach(function (linha) {
+            Array.prototype.forEach.call(linha.children, function (celula, i) {
+                if (celula.hasAttribute("colspan") || !titulos[i]) return;
+                celula.setAttribute("data-label", titulos[i]);
+            });
+        });
+    });
+})();

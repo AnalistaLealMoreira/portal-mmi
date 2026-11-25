@@ -222,7 +222,12 @@ html.shell-collapsed .shell-user-mini { justify-content: center; padding: 6px 0;
 .shell-user-avatar { background: var(--mmi-beige); color: #171513; }
 .shell-user-avatar .dot { background: #91a77a; border-color: var(--mmi-black); }
 .shell-user-nome { color: var(--mmi-text); }
-.shell-mobile-nav { background: var(--mmi-black); }
+.shell-mobile-nav {
+    position: sticky; top: 0; z-index: 1030; min-height: 56px;
+    background: #090909; border-bottom: 1px solid rgba(223, 208, 190, 0.18);
+}
+.shell-mobile-nav .navbar-toggler { padding: 4px 6px; line-height: 1; }
+.shell-mobile-nav .navbar-toggler:focus { box-shadow: 0 0 0 2px rgba(223, 208, 190, 0.35); }
 .shell-offcanvas-header { border-bottom-color: rgba(223, 208, 190, 0.18); }
 .shell-user-company {
     display: flex; align-items: center; gap: 9px; color: var(--mmi-text); font-size: 13px; font-weight: 700;
@@ -244,37 +249,10 @@ html.shell-collapsed .shell-user-mini { justify-content: center; padding: 6px 0;
 .shell-sector-links { display: flex; flex-direction: column; gap: 4px; }
 .shell-nav-empty { padding: 4px; color: #958d84; font-size: 12px; }
 
+/* Celular/tablet: a sidebar vira um painel (offcanvas) com o menu completo,
+   com nomes visíveis; o modo recolhido só existe no desktop. */
 @media (max-width: 991.98px) {
-    .shell-sidebar { --shell-width: 76px; }
-
-    .shell-user-greeting,
-    .shell-sidebar-footer .shell-user-info,
-    .shell-user-company > span:not(.shell-empresa-avatar) {
-        display: none;
-    }
-
-    .shell-user-welcome { align-items: center; }
-    .shell-user-company { justify-content: center; }
-    .shell-user-company .shell-empresa-avatar { margin: 0 auto; }
-    .shell-nav-user { padding-right: 8px; padding-left: 8px; }
-
-    .shell-nav-user .shell-label,
-    .shell-nav-user .shell-nav-empty { display: none; }
-
-    .shell-user-sector {
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        margin: 0 auto 8px;
-        border: 1px solid rgba(223, 208, 190, 0.18);
-        border-radius: 2px;
-        background: rgba(223, 208, 190, 0.08);
-    }
-
-    .shell-user-sector span { display: none; }
-    .shell-user-sector i:first-child { margin: 0; font-size: 15px; }
-    .shell-user-sector .shell-sector-chevron { display: none; }
-    .shell-sidebar-footer .shell-user-mini { justify-content: center; }
-    .shell-sidebar-footer { padding-right: 8px; padding-left: 8px; }
+    .shell-sidebar { --shell-width: min(300px, 86vw); max-width: 86vw; }
+    .shell-sidebar .shell-nav { overflow-y: auto; }
+    .shell-sidebar-footer .shell-user-mini { justify-content: flex-start; }
 }

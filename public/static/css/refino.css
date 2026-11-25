@@ -424,3 +424,43 @@ a.text-decoration-none:hover .card { border-color: #d7cfc4 !important; transform
 .shell-sidebar :where(a, button):focus-visible { outline-color: var(--rf-beige); outline-offset: -2px; }
 .rel-card:focus-visible { outline-offset: 3px; }
 .dica-menu { --bs-tooltip-bg: #23211e; --bs-tooltip-font-size: 0.8rem; --bs-tooltip-padding-x: 0.65rem; --bs-tooltip-padding-y: 0.35rem; }
+
+/* ---------- Celular: topo, cabeçalho da página e listas em cartões ---------- */
+@media (max-width: 991.98px) {
+    .shell-topbar { padding-left: 16px; padding-right: 16px; }
+    .shell-main { padding: 16px; }
+}
+@media (max-width: 575.98px) {
+    .page-head { flex-direction: column; align-items: stretch; }
+    .page-head-acoes { margin-left: 0; width: 100%; }
+    .page-head-acoes > .btn { flex: 1 1 auto; justify-content: center; }
+    .page-head-acoes > .busca { flex: 1 1 100%; }
+
+    /* Tabelas de listagem viram cartões: cada célula mostra o nome da coluna
+       (data-label, preenchido pelo shell.js a partir do <thead>). */
+    .table-responsive:has(> .table.shadow-sm) { overflow: visible; background: transparent; border: 0; box-shadow: none; }
+    .table.shadow-sm thead { display: none; }
+    .table.shadow-sm, .table.shadow-sm tbody, .table.shadow-sm tr, .table.shadow-sm td { display: block; width: 100%; }
+    .table.shadow-sm tbody tr {
+        margin-bottom: 10px; padding: 6px 0; background: var(--rf-surface);
+        border: 1px solid var(--rf-line); border-radius: var(--rf-radius); box-shadow: var(--rf-shadow);
+    }
+    .table.shadow-sm > :not(caption) > * > * { padding: 6px 14px; border-bottom: 0; background: transparent; box-shadow: none; }
+    .table.shadow-sm td[data-label] {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+        text-align: right; overflow-wrap: anywhere;
+    }
+    .table.shadow-sm td[data-label]::before {
+        content: attr(data-label); flex: 0 0 auto; max-width: 45%; text-align: left;
+        font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--rf-text-3);
+    }
+    .table.shadow-sm td[data-label]:first-child { display: block; text-align: left; font-weight: 500; font-size: 0.95rem; }
+    .table.shadow-sm td[data-label]:first-child::before { display: none; }
+    .table.shadow-sm td:not([data-label]):last-child {
+        margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--rf-line-soft); text-align: right;
+    }
+    .table.shadow-sm td:not([data-label]):last-child:empty { display: none; }
+    .table.shadow-sm td[colspan] { text-align: center; }
+    .table.shadow-sm .acoes-linha { justify-content: flex-end; }
+    .table.shadow-sm tbody tr .acao-btn { opacity: 1; }
+}

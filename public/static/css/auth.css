@@ -1,6 +1,8 @@
 /* Tela de login pública (accounts/login.html). */
 
 html, body { margin: 0; padding: 0; }
+html:has(.auth-page) { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body:has(.auth-page) { background: #090909; overflow-x: hidden; }
 
 @keyframes axionDrift {
     0% { transform: translate3d(0, 0, 0) scale(1); }
@@ -21,11 +23,14 @@ html, body { margin: 0; padding: 0; }
 
     box-sizing: border-box;
     position: relative;
-    height: 100vh;
-    height: 100dvh;
+    /* Ocupa ao menos a tela inteira, mas cresce (e a PÁGINA rola) quando o
+       conteúdo não cabe: em janela baixa, zoom alto ou celular nada é cortado. */
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
     overflow: hidden;
     margin: 0;
+    flex-direction: column;
     background: var(--ax-bg);
     color: var(--ax-text);
     font-family: "Plus Jakarta Sans", "Helvetica Neue", Helvetica, sans-serif;
@@ -33,7 +38,7 @@ html, body { margin: 0; padding: 0; }
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(20px, 4vw, 56px);
+    padding: clamp(20px, 4vw, 56px) clamp(20px, 4vw, 56px) 0;
 }
 .auth-page, .auth-page * { box-sizing: border-box; }
 .auth-page input, .auth-page button { font-family: inherit; }
@@ -71,7 +76,9 @@ html, body { margin: 0; padding: 0; }
     position: relative; z-index: 2; width: 100%; max-width: 1180px;
     display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: clamp(28px, 4vw, 72px); align-items: center;
+    margin: auto 0;
 }
+.auth-intro { min-width: 0; }
 
 .auth-intro img { height: clamp(54px, 6vw, 82px); width: auto; max-width: min(100%, 360px); object-fit: contain; object-position: left center; display: block; margin-bottom: clamp(34px, 5vw, 64px); }
 .auth-kicker {
@@ -120,6 +127,7 @@ html, body { margin: 0; padding: 0; }
 .auth-toggle-senha:hover { color: #ffffff; background: rgba(223, 208, 190, 0.2); }
 
 .auth-form-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.auth-form label.auth-remember { flex-direction: row; letter-spacing: 0; }
 .auth-remember { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ax-muted); cursor: pointer; }
 .auth-remember input { width: 17px; height: 17px; accent-color: var(--ax-orange); cursor: pointer; }
 .auth-forgot { font-size: 14px; font-weight: 600; }
@@ -145,18 +153,38 @@ html, body { margin: 0; padding: 0; }
 .auth-footer-note a { font-weight: 700; }
 
 .auth-page-footer {
-    position: absolute; z-index: 2; left: 0; right: 0; bottom: 0;
+    position: relative; z-index: 2; width: 100%; flex: 0 0 auto; margin-top: clamp(20px, 3vh, 36px);
     display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
-    padding: 18px clamp(20px, 4vw, 56px); font-size: 13px; color: var(--ax-muted-3);
+    padding: 18px 0; font-size: 13px; color: var(--ax-muted-3);
 }
 .auth-page-footer a { color: var(--ax-muted-2); }
 
 @media (max-width: 760px) {
-    .auth-page { height: auto; min-height: 100dvh; overflow: auto; align-items: flex-start; padding: 42px 20px 74px; }
-    .auth-grid { grid-template-columns: 1fr; gap: 38px; }
-    .auth-intro img { height: 54px; margin-bottom: 34px; }
-    .auth-lede { font-size: 15px; }
+    .auth-page { justify-content: flex-start; padding: 28px 18px 0; }
+    .auth-grid { grid-template-columns: minmax(0, 1fr); gap: 26px; margin: 0; }
+    .auth-intro img { height: 44px; margin-bottom: 22px; }
+    .auth-kicker { margin-bottom: 10px; }
+    .auth-title { font-size: clamp(26px, 7.4vw, 32px); margin-bottom: 12px; }
+    .auth-lede { font-size: 14.5px; line-height: 1.55; margin-bottom: 0; }
+    /* No celular o formulário vem logo; os destaques ficam só no desktop. */
+    .auth-bullets { display: none; }
     .auth-form-wrap { justify-content: stretch; }
-    .auth-form { max-width: none; }
-    .auth-page-footer { padding: 18px 20px; }
+    .auth-form { max-width: none; padding: 24px 20px; gap: 16px; }
+    /* 16px evita o zoom automático do iOS ao focar o campo. */
+    .auth-page .auth-form input[type="text"], .auth-page .auth-form input[type="password"] { font-size: 16px; }
+    .auth-page-footer { padding: 16px 0 20px; font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+    .auth-page { padding: 20px 14px 0; }
+    .auth-lede { display: none; }
+    .auth-form { padding: 20px 16px; }
+}
+
+/* Janelas baixas (notebook com zoom, celular deitado): compacta o topo. */
+@media (min-width: 761px) and (max-height: 640px) {
+    .auth-intro img { height: 48px; margin-bottom: 24px; }
+    .auth-title { font-size: clamp(28px, 3.2vw, 40px); }
+    .auth-lede { margin-bottom: 20px; }
+    .auth-form { gap: 14px; padding: 26px 30px; }
 }
