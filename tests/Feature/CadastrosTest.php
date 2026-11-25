@@ -170,7 +170,11 @@ class CadastrosTest extends PortalTestCase
     {
         AcessoLog::create(['usuario_id' => $this->normalA->id, 'link_id' => $this->linkA1->id]);
 
-        $this->actingAs($this->admin)->get('/dashboard')->assertOk()->assertSee('Empresas Cadastradas');
+        $this->actingAs($this->admin)->get('/dashboard')->assertOk()
+            ->assertSee('Empresas Cadastradas')->assertSee('Usuários Online')
+            ->assertSee('acessosPorUsuarioChart')->assertSee('acessosPorLinkChart')->assertSee('acessosPorPerfilChart')->assertSee('acessosPorMesChart');
+        $this->actingAs($this->admin)->get("/dashboard?setor={$this->linkA2->setor_id}")->assertOk()
+            ->assertDontSee('acessosPorLinkChart');
         foreach ([$this->adminEmpresaA, $this->diretorA, $this->normalA, $this->especialA] as $usuario) {
             $this->actingAs($usuario)->get('/dashboard')->assertOk()->assertSee('Indicadores de Alerta');
         }

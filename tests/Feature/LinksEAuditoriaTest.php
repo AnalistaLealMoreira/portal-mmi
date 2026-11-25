@@ -54,6 +54,14 @@ class LinksEAuditoriaTest extends PortalTestCase
         }
     }
 
+    public function test_admin_nao_recebe_nenhuma_marca_dagua(): void
+    {
+        $this->actingAs($this->admin)->get("/links/{$this->linkA1->id}/acessar")
+            ->assertOk()
+            ->assertDontSee('Proibido o compartilhamento')
+            ->assertDontSee('shell-watermark', false);
+    }
+
     public function test_especial_ve_links_do_proprio_setor_e_os_compartilhados(): void
     {
         $this->actingAs($this->especialA)->get('/links')

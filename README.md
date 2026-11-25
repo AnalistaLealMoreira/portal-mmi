@@ -166,7 +166,9 @@ O campo aceita nome de usuário ou e-mail (sem diferenciar maiúsculas). Sem
 Para usuários Normais e Especiais, o relatório no iframe recebe uma camada
 visual com usuário, e-mail, IP, data/hora, setor e o aviso de proibição de
 compartilhamento conforme a LGPD. A camada não bloqueia cliques e não aparece
-para Diretor nem Admin da Empresa. Todo acesso é registrado em `auditoria_acessolog`.
+para Diretor nem Admin da Empresa. O Administrador global não recebe nenhuma
+marca d'água: nem a camada LGPD nem a linha de identificação acima do relatório.
+Todo acesso é registrado em `auditoria_acessolog`.
 
 ## Interface
 

@@ -5,9 +5,14 @@
 @php($user = auth()->user())
 <div class="bi-report-page">
     <div class="bi-report-barra">
+        {{-- O administrador global não recebe nenhuma marca d'água (nem esta linha nem a camada LGPD). --}}
+        @if ($user->isAdmin())
+        <span class="bi-report-info"></span>
+        @else
         <span class="bi-report-info shell-watermark text-truncate">
             <i class="bi bi-person-badge"></i> {{ $user->email ?: 'E-mail não informado' }} · {{ $empresaAtiva?->nome ?? 'Empresa não informada' }} · {{ data_local() }}
         </span>
+        @endif
         <span class="bi-report-botoes">
             <a href="{{ route('links.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Relatórios</a>
             <button type="button" class="btn btn-primary btn-sm" id="biTelaCheia" hidden><i class="bi bi-arrows-fullscreen"></i> Tela cheia</button>
@@ -15,8 +20,8 @@
     </div>
     <div class="bi-report-frame border rounded shadow-sm overflow-hidden" id="biReportFrame">
         <iframe src="{{ $link->url }}" title="{{ $link->nome }}"></iframe>
-        {{-- Camada de auditoria (LGPD): não é exibida para Diretor nem Admin da Empresa. --}}
-        @unless ($user->isDiretor() || $user->isAdminEmpresa())
+        {{-- Camada de auditoria (LGPD): não é exibida para Administrador, Diretor nem Admin da Empresa. --}}
+        @unless ($user->isAdmin() || $user->isDiretor() || $user->isAdminEmpresa())
         <div class="bi-report-audit-watermark" aria-hidden="true">
             @for ($i = 0; $i < 2; $i++)
             <div class="bi-report-audit-watermark-line">

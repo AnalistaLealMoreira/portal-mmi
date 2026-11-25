@@ -7,9 +7,10 @@
     @foreach ([
         ['bi-building', $totalEmpresas, 'Empresas Cadastradas'],
         ['bi-people-fill', $totalUsuarios, 'Total de Usuários'],
+        ['bi-person-check-fill', $usuariosOnline, 'Usuários Online'],
         ['bi-bar-chart-fill', $totalLinks, 'Total de Links Cadastrados'],
     ] as [$icone, $valor, $rotulo])
-    <div class="col-6 col-lg-4">
+    <div class="col-6 col-lg-3">
         <div class="card h-100 text-center border-0 shadow-sm">
             <div class="card-body">
                 <div class="kpi-icon mx-auto mb-2"><i class="bi {{ $icone }}"></i></div>
@@ -21,11 +22,71 @@
     @endforeach
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <h2 class="h5 mb-1">Links por Empresa</h2>
-        <p class="text-muted small">Quantidade de links de BI cadastrados em cada empresa.</p>
-        <canvas id="linksPorEmpresaChart" height="100"></canvas>
+<form method="get" class="filtros">
+    <label class="filtros-data">De <input type="date" name="de" value="{{ $filtro['de'] }}" class="form-control form-control-sm"></label>
+    <label class="filtros-data">Até <input type="date" name="ate" value="{{ $filtro['ate'] }}" class="form-control form-control-sm"></label>
+    <select name="setor" class="form-select form-select-sm" style="width: auto;" aria-label="Área">
+        <option value="">Todas as áreas</option>
+        @foreach ($areas as $area)
+        <option value="{{ $area->id }}" @selected($filtro['setor'] === $area->id)>{{ $area->empresa }} · {{ $area->nome }}</option>
+        @endforeach
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+    @if (request()->hasAny(['de', 'ate', 'setor']))
+    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+    @endif
+</form>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Acessos por Usuário</h2>
+                <p class="text-muted small">Os 15 usuários com mais acessos no período.</p>
+                @if ($acessosPorUsuario->isEmpty())
+                <p class="text-muted small">Nenhum acesso no período.</p>
+                @else
+                <canvas id="acessosPorUsuarioChart" height="260"></canvas>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Acessos por Link</h2>
+                <p class="text-muted small">Os 15 links mais acessados no período.</p>
+                @if ($acessosPorLink->isEmpty())
+                <p class="text-muted small">Nenhum acesso no período.</p>
+                @else
+                <canvas id="acessosPorLinkChart" height="260"></canvas>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Acessos por Perfil</h2>
+                <p class="text-muted small">Distribuição dos acessos do período por perfil de usuário.</p>
+                @if ($acessosPorPerfil->isEmpty())
+                <p class="text-muted small">Nenhum acesso no período.</p>
+                @else
+                <div class="mx-auto" style="max-width: 340px;">
+                    <canvas id="acessosPorPerfilChart"></canvas>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Acessos por Mês</h2>
+                <p class="text-muted small">Últimos 12 meses até {{ end($acessosPorMes)['nome'] }}, na área selecionada.</p>
+                <canvas id="acessosPorMesChart" height="200"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 @else
@@ -148,10 +209,35 @@ Chart.defaults.plugins.tooltip.cornerRadius = 8;
 Chart.defaults.plugins.tooltip.displayColors = false;
 Chart.defaults.scale.border = { display: false };
 
+// Rótulo de dados em todo gráfico de barras: o valor na ponta de cada barra.
+Chart.register({
+    id: 'rotulosNasBarras',
+    afterDatasetsDraw: function (chart) {
+        if (chart.config.type !== 'bar') return;
+        var horizontal = chart.options.indexAxis === 'y';
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '600 12px ' + Chart.defaults.font.family;
+        ctx.fillStyle = COR.carvao;
+        ctx.textAlign = horizontal ? 'left' : 'center';
+        ctx.textBaseline = horizontal ? 'middle' : 'bottom';
+        chart.data.datasets.forEach(function (dataset, d) {
+            var meta = chart.getDatasetMeta(d);
+            if (meta.hidden) return;
+            meta.data.forEach(function (barra, i) {
+                var valor = dataset.data[i];
+                if (valor === null || valor === undefined) return;
+                ctx.fillText(valor, horizontal ? barra.x + 6 : barra.x, horizontal ? barra.y : barra.y - 4);
+            });
+        });
+        ctx.restore();
+    },
+});
+
 function graficoDeBarras(id, dados, cor, horizontal) {
     var eixoValor = horizontal ? 'x' : 'y';
     var escalas = {};
-    escalas[eixoValor] = { beginAtZero: true, ticks: { precision: 0 } };
+    escalas[eixoValor] = { beginAtZero: true, grace: '12%', ticks: { precision: 0 } };
     escalas[horizontal ? 'y' : 'x'] = { grid: { display: false } };
     new Chart(document.getElementById(id), {
         type: 'bar',
@@ -169,19 +255,89 @@ function graficoDeBarras(id, dados, cor, horizontal) {
 }
 
 @if (! empty($mostrarPainelAdmin))
-var linksPorEmpresa = @json($linksPorEmpresa);
-new Chart(document.getElementById('linksPorEmpresaChart'), {
+@if ($acessosPorUsuario->isNotEmpty())
+graficoDeBarras('acessosPorUsuarioChart', @json($acessosPorUsuario), COR.carvao, true);
+@endif
+@if ($acessosPorLink->isNotEmpty())
+graficoDeBarras('acessosPorLinkChart', @json($acessosPorLink), COR.bege, true);
+@endif
+var acessosPorMes = @json($acessosPorMes);
+new Chart(document.getElementById('acessosPorMesChart'), {
     type: 'bar',
     data: {
-        labels: linksPorEmpresa.map(function (i) { return i.empresa; }),
-        datasets: [{ label: 'Links', data: linksPorEmpresa.map(function (i) { return i.total; }), backgroundColor: COR.carvao, borderRadius: 6, maxBarThickness: 48 }],
+        labels: acessosPorMes.map(function (i) { return i.nome; }),
+        datasets: [{ label: 'Acessos', data: acessosPorMes.map(function (i) { return i.total; }), backgroundColor: COR.bege, borderRadius: 6, maxBarThickness: 36 }],
     },
     options: {
         responsive: true,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } },
+        scales: { y: { beginAtZero: true, grace: '12%', ticks: { precision: 0 } }, x: { grid: { display: false } } },
     },
 });
+
+@if ($acessosPorPerfil->isNotEmpty())
+var acessosPorPerfil = @json($acessosPorPerfil);
+
+// Escreve o total dentro de cada fatia, em branco ou carvão conforme o tom da fatia.
+function corDeContraste(hex) {
+    var n = parseInt(hex.replace('#', ''), 16);
+    var canal = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var lum = function (c) { return 0.2126 * canal((c >> 16) & 255) + 0.7152 * canal((c >> 8) & 255) + 0.0722 * canal(c & 255); };
+    var fatia = lum(n);
+    var escuro = lum(parseInt(COR.carvao.replace('#', ''), 16));
+    // Usa a cor de texto com maior razão de contraste (WCAG) sobre a fatia.
+    return (1.05 / (fatia + 0.05)) >= ((fatia + 0.05) / (escuro + 0.05)) ? '#ffffff' : COR.carvao;
+}
+var rotulosNasFatias = {
+    id: 'rotulosNasFatias',
+    afterDatasetsDraw: function (chart) {
+        var ctx = chart.ctx;
+        var meta = chart.getDatasetMeta(0);
+        var dataset = chart.data.datasets[0];
+        ctx.save();
+        ctx.font = '600 13px ' + Chart.defaults.font.family;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach(function (arco, i) {
+            if (arco.hidden || !dataset.data[i]) return;
+            if (arco.endAngle - arco.startAngle < 0.3) return; // fatia estreita demais para o número
+            var pos = arco.tooltipPosition();
+            ctx.fillStyle = corDeContraste(dataset.backgroundColor[i % dataset.backgroundColor.length]);
+            ctx.fillText(dataset.data[i], pos.x, pos.y);
+        });
+        ctx.restore();
+    },
+};
+
+new Chart(document.getElementById('acessosPorPerfilChart'), {
+    type: 'pie',
+    plugins: [rotulosNasFatias],
+    data: {
+        labels: acessosPorPerfil.map(function (i) { return i.nome; }),
+        datasets: [{
+            data: acessosPorPerfil.map(function (i) { return i.total; }),
+            backgroundColor: [COR.carvao, COR.bege, '#8a8178', '#d9c4a5', '#5c544c'],
+            borderColor: '#fff',
+            borderWidth: 2,
+        }],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14 } },
+            tooltip: {
+                displayColors: true,
+                callbacks: {
+                    label: function (ctx) {
+                        var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                        return ctx.label + ': ' + ctx.parsed + ' (' + Math.round(ctx.parsed * 100 / total) + '%)';
+                    },
+                },
+            },
+        },
+    },
+});
+@endif
 @else
 graficoDeBarras('rankingChart', @json($rankingSetores), COR.carvao, false);
 graficoDeBarras('topLinksChart', @json($topLinks), COR.bege, true);
